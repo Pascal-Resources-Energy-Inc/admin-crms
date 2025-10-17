@@ -329,7 +329,7 @@
         gap: 10px;
     }
 
-    .user-avatar {
+    .user-avatar1 {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -551,7 +551,8 @@
                                     data-is-active="{{ $reward->is_active ? '1' : '0' }}"
                                     data-is-expired="{{ $reward->isExpired() ? '1' : '0' }}">
                                     
-                                    <div class="reward-card-small">
+                                    
+                                    <div class="reward-card-small {{ $reward->is_limit_reached ? 'limit-reached' : '' }}">
                                         <!-- Edit and Delete Action Buttons -->
                                         @if($canEdit || $canDelete)
                                         <div class="reward-actions">
@@ -575,9 +576,9 @@
 
                                         <div class="reward-image-small">
                                             @if($reward->image)
-                                                <img src="{{ $reward->image }}" alt="{{ $reward->name }}">
+                                                <img src="{{ $reward->image }}" alt="{{ $reward->name }}" style="{{ $reward->is_limit_reached ? 'opacity: 0.5; filter: grayscale(100%);' : '' }}">
                                             @else
-                                                <div class="placeholder">
+                                                <div class="placeholder" style="{{ $reward->is_limit_reached ? 'opacity: 0.5; filter: grayscale(100%);' : '' }}">
                                                     <i class="fas fa-gift"></i>
                                                 </div>
                                             @endif
@@ -587,7 +588,9 @@
                                             </div>
                                             
                                             <!-- Status Badge -->
-                                            @if(!$reward->is_active)
+                                            @if($reward->is_limit_reached)
+                                                <span class="reward-status-badge" style="background: rgba(149, 165, 166, 0.9);">Limit Reached</span>
+                                            @elseif(!$reward->is_active)
                                                 <span class="reward-status-badge">Inactive</span>
                                             @elseif($reward->isExpired())
                                                 <span class="reward-status-badge">Expired</span>
@@ -600,6 +603,20 @@
                                             <div class="reward-title-small">₱{{ $reward->price_reward }} Rewards</div>
                                             <div class="reward-subtitle-small">{{ $reward->description }}</div>
                                             <div class="reward-points-small">{{ number_format($reward->points_required) }} points</div>
+                                            
+                                            <!-- Claim Count Display with Limit -->
+                                            <div class="reward-claim-count" style="margin-top: 8px; font-size: 12px; color: {{ $reward->is_limit_reached ? '#95A5A6' : '#5DADE2' }}; font-weight: 600;">
+                                                <i class="fas fa-users"></i> {{ $reward->claims_count ?? 0 }} 
+                                                @if($reward->redemption_limit)
+                                                    / {{ $reward->redemption_limit }}
+                                                @endif
+                                                {{ ($reward->claims_count ?? 0) === 1 ? 'claim' : 'claims' }}
+                                                @if($reward->is_limit_reached)
+                                                    <span style="color: #E74C3C; font-weight: 700; margin-left: 5px;">
+                                                        <i class="fas fa-exclamation-circle"></i> Full
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -652,7 +669,7 @@
                                         <tr>
                                             <td>
                                                 <div class="user-info">
-                                                    <div class="user-avatar">
+                                                    <div class="user-avatar1">
                                                         {{ strtoupper(substr($history->user->name ?? 'U', 0, 2)) }}
                                                     </div>
                                                     <div class="user-details">
@@ -704,8 +721,10 @@
                                                                 title="Approve">
                                                             <i class="fas fa-check"></i>
                                                         </button>
+                                                    @elseif(strtolower($history->status) === 'pending')
+                                                        <span style="color: #999; font-size: 12px;">Pending</span>
                                                     @else
-                                                        <span style="color: #999; font-size: 12px;">No actions</span>
+                                                        <span style="color: #999; font-size: 12px;">Succesfully Sent</span>
                                                     @endif
                                                 </div>
                                             </td>
@@ -754,6 +773,12 @@
                     <div class="mb-3">
                         <label for="pointsRequired" class="form-label">Points Required <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" id="pointsRequired" name="points_required" min="1" placeholder="e.g., 200" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="redemption_limit" class="form-label">Redemption Limit</label>
+                        <input type="text" class="form-control" id="redemption_limit" name="redemption_limit" placeholder="e.g., 10">
+                        <small class="form-text text-muted">Leave empty for no redemption limit</small>
                     </div>
 
                     <div class="mb-3">
@@ -1021,15 +1046,42 @@
         const file = e.target.files[0];
         const imagePreview = document.getElementById('imagePreview');
         
-        if (file && imagePreview) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagePreview.querySelector('img').src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        } else if (imagePreview) {
-            imagePreview.style.display = 'none';
+        if (file) {
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Too Large',
+                    text: `Image size: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum allowed: 5MB`,
+                    confirmButtonColor: '#E74C3C'
+                });
+                e.target.value = '';
+                if (imagePreview) imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Check file type
+            if (!file.type.match('image.*')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: 'Please upload an image file (JPG, PNG, GIF)',
+                    confirmButtonColor: '#E74C3C'
+                });
+                e.target.value = '';
+                if (imagePreview) imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Show preview
+            if (imagePreview) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.querySelector('img').src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
         }
     }
 
@@ -1037,15 +1089,42 @@
         const file = e.target.files[0];
         const imagePreview = document.getElementById('editImagePreview');
         
-        if (file && imagePreview) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagePreview.querySelector('img').src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        } else if (imagePreview) {
-            imagePreview.style.display = 'none';
+        if (file) {
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Too Large',
+                    text: `Image size: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum allowed: 5MB`,
+                    confirmButtonColor: '#E74C3C'
+                });
+                e.target.value = '';
+                if (imagePreview) imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Check file type
+            if (!file.type.match('image.*')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: 'Please upload an image file (JPG, PNG, GIF)',
+                    confirmButtonColor: '#E74C3C'
+                });
+                e.target.value = '';
+                if (imagePreview) imagePreview.style.display = 'none';
+                return;
+            }
+
+            // Show preview
+            if (imagePreview) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.querySelector('img').src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
         }
     }
 
@@ -1116,7 +1195,7 @@
                         transition: all 0.3s ease;
                         margin-bottom: 15px;
                     " onmouseover="this.style.borderColor='#4A9DD1'; this.style.background='#e8f4f8';" 
-                       onmouseout="this.style.borderColor='#5DADE2'; this.style.background='#f8f9fa';">
+                    onmouseout="this.style.borderColor='#5DADE2'; this.style.background='#f8f9fa';">
                         <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #5DADE2; margin-bottom: 10px;"></i>
                         <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 5px;">
                             Click to upload proof of payment
@@ -1127,10 +1206,10 @@
                     </label>
                     
                     <input type="file" 
-                           id="proofOfPayment" 
-                           accept="image/*" 
-                           style="display: none;"
-                           required>
+                        id="proofOfPayment" 
+                        accept="image/*" 
+                        style="display: none;"
+                        required>
                     
                     <div id="imagePreviewContainer" style="
                         display: none;
@@ -1199,16 +1278,18 @@
                         return;
                     }
                     
+                    // Check file size
                     if (file.size > 5 * 1024 * 1024) {
-                        Swal.showValidationMessage('File size must be less than 5MB');
+                        Swal.showValidationMessage(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB (Max: 5MB)`);
                         fileInput.value = '';
                         previewContainer.style.display = 'none';
                         fileLabel.style.display = 'block';
                         return;
                     }
                     
+                    // Check file type
                     if (!file.type.match('image.*')) {
-                        Swal.showValidationMessage('Please upload a valid image file (PNG, JPG, GIF)');
+                        Swal.showValidationMessage('Please upload a valid image file');
                         fileInput.value = '';
                         previewContainer.style.display = 'none';
                         fileLabel.style.display = 'block';
@@ -1221,7 +1302,7 @@
                     
                     imageInfo.innerHTML = `
                         <strong>${file.name}</strong><br>
-                        Size: ${fileSizeKB} KB | Type: ${file.type}
+                        Size: ${fileSizeKB} KB
                     `;
                     
                     const validationMessage = document.querySelector('.swal2-validation-message');
@@ -1245,6 +1326,16 @@
                 
                 if (!file) {
                     Swal.showValidationMessage('Please upload proof of payment image');
+                    return false;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.showValidationMessage(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB (Max: 5MB)`);
+                    return false;
+                }
+                
+                if (!file.type.match('image.*')) {
+                    Swal.showValidationMessage('Please upload a valid image file');
                     return false;
                 }
                 

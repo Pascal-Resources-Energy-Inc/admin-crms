@@ -19,6 +19,7 @@ class Reward extends Model
         'image',
         'is_active'
     ];
+    
     protected $casts = [
         'points_required' => 'integer',
         'stock' => 'integer',
@@ -28,6 +29,11 @@ class Reward extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
+
+    public function redeemedHistories()
+    {
+        return $this->hasMany(RedeemedHistory::class, 'reward_name', 'description');
+    }
 
     public function isExpired()
     {

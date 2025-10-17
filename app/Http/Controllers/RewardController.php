@@ -16,8 +16,20 @@ class RewardController extends Controller
     public function index()
     {
         $users = User::with(['dealer', 'client'])->get();
+        
         $rewards = Reward::orderBy('created_at', 'desc')->get();
-        $redeemhistory = RedeemedHistory::with(['user', 'reward'])
+        
+        foreach ($rewards as $reward) {
+            $reward->claims_count = RedeemedHistory::where('reward_name', 'LIKE', '%' . $reward->description . '%')
+                ->count();
+            
+            $reward->is_limit_reached = false;
+            if ($reward->redemption_limit !== null && $reward->redemption_limit > 0) {
+                $reward->is_limit_reached = $reward->claims_count >= $reward->redemption_limit;
+            }
+        }
+        
+        $redeemhistory = RedeemedHistory::with(['user'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -25,7 +37,6 @@ class RewardController extends Controller
 
         return view('rewards', compact('users', 'rewards', 'redeemhistory', 'pendingCount'));
     }
-    
 
     public function store(Request $request)
     {
@@ -33,6 +44,7 @@ class RewardController extends Controller
             'price_reward' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
             'points_required' => 'required|integer|min:1',
+            'redemption_limit' => 'nullable|integer|max:11',
             'expiry_date' => 'nullable|date',
             'image' => 'nullable|mimes:jpeg,jpg,png,gif,JPG,JPEG|max:5120',
             'is_active' => 'nullable|boolean'
@@ -42,6 +54,7 @@ class RewardController extends Controller
         $reward->price_reward = $validated['price_reward'];
         $reward->description = $validated['description'];
         $reward->points_required = $validated['points_required'];
+        $reward->redemption_limit = $validated['redemption_limit'] ?? null;
         $reward->expiry_date = $validated['expiry_date'] ?? null;
         $reward->is_active = $request->has('is_active') ? 1 : 0;
 
@@ -67,6 +80,7 @@ class RewardController extends Controller
             'price_reward' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
             'points_required' => 'required|integer|min:1',
+            'redemption_limit' => 'nullable|integer|max:11',
             'expiry_date' => 'nullable|date',
             'image' => 'nullable|mimes:jpeg,jpg,png,gif,JPG,JPEG|max:5120',
             'is_active' => 'nullable|boolean'
@@ -76,6 +90,7 @@ class RewardController extends Controller
         $reward->price_reward = $validated['price_reward'];
         $reward->description = $validated['description'];
         $reward->points_required = $validated['points_required'];
+        $reward->redemption_limit = $validated['redemption_limit'] ?? null;
         $reward->expiry_date = $validated['expiry_date'] ?? null;
         $reward->is_active = $request->has('is_active') ? 1 : 0;
 
@@ -128,6 +143,7 @@ class RewardController extends Controller
                 Log::info('Proof of payment uploaded for redemption ID: ' . $id);
             }
             
+            $redemption->viewed = '0';
             $redemption->save();
 
             if ($request->expectsJson() || $request->ajax()) {

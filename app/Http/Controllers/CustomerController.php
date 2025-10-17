@@ -169,8 +169,6 @@ class CustomerController extends Controller
    $serials = Stove::where('serial_number', 'like', '%' . $id . '%')->first();
    if($serials)
    {
-
-
    $client = Client::findOrfail($serials->client_id);
     $user = User::find($client->user_id);
 
@@ -191,6 +189,7 @@ class CustomerController extends Controller
        {
          return response()->json(['success' => false], 404);
        }
+       
 }
     public function sign($id)
     {

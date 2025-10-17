@@ -227,8 +227,12 @@
             display: none !important;
         }
 
+        .badges {
+            color: white;
+        }   
+
         /* Badge positioning for collapsed state */
-        .sidebar.collapsed .nav .nav-item .nav-link .badge {
+        .sidebar.collapsed .nav .nav-item .nav-link .badges {
             position: absolute !important;
             top: 8px !important;
             right: 8px !important;
@@ -1162,7 +1166,7 @@
                     <div class="rounded-circle danger">
                         <iconify-icon icon="solar:bell-linear" class="fs-7" style="color: #DFDFEC"></iconify-icon>
                         @if($totalUnreadCount > 0)
-                        <span class="position-absolute bottom-45 start-100 translate-middle badge rounded-pill notif-badge" 
+                        <span class="position-absolute bottom-45 start-100 translate-middle badges rounded-pill notif-badge" 
                             id="notification-badge">
                             {{$totalUnreadCount ?? ''}}
                         </span>
@@ -1213,7 +1217,7 @@
                                                         <p class="mb-0 fs-3">
                                                             <strong>{{ $client->name }}</strong> registered
                                                             @if($isUnread)
-                                                                <span class="badge bg-primary ms-2" style="font-size: 0.6rem;">NEW</span>
+                                                                <span class="badges bg-primary ms-2" style="font-size: 0.6rem;">NEW</span>
                                                             @endif
                                                         </p>
                                                         <small class="text-muted">{{ $client->created_at->diffForHumans() }}</small>
@@ -1264,7 +1268,7 @@
                                                             @endif
                                                             made transaction
                                                             @if($isUnread)
-                                                                <span class="badge bg-primary ms-2" style="font-size: 0.6rem;">NEW</span>
+                                                                <span class="badges bg-primary ms-2" style="font-size: 0.6rem;">NEW</span>
                                                             @endif
                                                             @if($transaction->product)
                                                                 <br><small class="text-muted">{{ $transaction->product->name }} - ₱{{ number_format($transaction->price, 2) }}</small>
