@@ -20,13 +20,14 @@ class RewardController extends Controller
         $rewards = Reward::orderBy('created_at', 'desc')->get();
         
         foreach ($rewards as $reward) {
-            $reward->claims_count = RedeemedHistory::where('reward_name', 'LIKE', '%' . $reward->description . '%')
-                ->count();
+            $reward->claims_count = RedeemedHistory::where('reward_id', $reward->id)->count();
             
             $reward->is_limit_reached = false;
             if ($reward->redemption_limit !== null && $reward->redemption_limit > 0) {
                 $reward->is_limit_reached = $reward->claims_count >= $reward->redemption_limit;
             }
+            
+            $reward->has_claims = $reward->claims_count > 0;
         }
         
         $redeemhistory = RedeemedHistory::with(['user'])
@@ -44,7 +45,7 @@ class RewardController extends Controller
             'price_reward' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
             'points_required' => 'required|integer|min:1',
-            'redemption_limit' => 'nullable|integer|max:11',
+            'redemption_limit' => 'nullable|integer|min:1',
             'expiry_date' => 'nullable|date',
             'image' => 'nullable|mimes:jpeg,jpg,png,gif,JPG,JPEG|max:5120',
             'is_active' => 'nullable|boolean'
@@ -80,7 +81,7 @@ class RewardController extends Controller
             'price_reward' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
             'points_required' => 'required|integer|min:1',
-            'redemption_limit' => 'nullable|integer|max:11',
+            'redemption_limit' => 'nullable|integer|min:5',
             'expiry_date' => 'nullable|date',
             'image' => 'nullable|mimes:jpeg,jpg,png,gif,JPG,JPEG|max:5120',
             'is_active' => 'nullable|boolean'

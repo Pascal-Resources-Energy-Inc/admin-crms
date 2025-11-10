@@ -117,9 +117,9 @@
         margin-right: 8px;
     }
 
-    #addRewardModal input::placeholder, #editRewardModal input::placeholder {
-        color: #888888c4;
-        opacity: 1;
+    #addRewardModal input::placeholder, .editRewardModal input::placeholder {
+        color: #888888c4 !important;
+        opacity: 1 !important;
     }
 
     /* Rewards Grid Container */
@@ -553,20 +553,19 @@
                                     
                                     
                                     <div class="reward-card-small {{ $reward->is_limit_reached ? 'limit-reached' : '' }}">
-                                        <!-- Edit and Delete Action Buttons -->
                                         @if($canEdit || $canDelete)
                                         <div class="reward-actions">
                                             @if($canEdit)
-                                            <button class="reward-action-btn edit" 
-                                                    onclick="editReward({{ $reward->id }})"
-                                                    title="Edit Reward">
+                                            <button class="reward-action-btn edit btn-edit" 
+                                                    onclick="handleEditReward({{ $reward->id }}, {{ $reward->has_claims ? 'true' : 'false' }})"
+                                                    title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             @endif
                                             
                                             @if($canDelete)
                                             <button class="reward-action-btn delete" 
-                                                    onclick="deleteReward({{ $reward->id }})"
+                                                    onclick="handleDeleteReward({{ $reward->id }}, {{ $reward->has_claims ? 'true' : 'false' }})"
                                                     title="Delete Reward">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -589,7 +588,7 @@
                                             
                                             <!-- Status Badge -->
                                             @if($reward->is_limit_reached)
-                                                <span class="reward-status-badge" style="background: rgba(149, 165, 166, 0.9);">Limit Reached</span>
+                                                <span class="reward-status-badge" style="background: rgba(149, 165, 166, 0.9);">Fully Redeemed</span>
                                             @elseif(!$reward->is_active)
                                                 <span class="reward-status-badge">Inactive</span>
                                             @elseif($reward->isExpired())
@@ -634,7 +633,16 @@
             <!-- Tab 2: Redemption History -->
             <div id="redemptions-tab" class="tab-content">
                 <div class="redemptions-table-container">
-                    <div class="row g-2 mb-7">
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-2">
+                            <select class="form-select" id="entriesPerPage">
+                                <option value="10">Show 10</option>
+                                <option value="25">Show 25</option>
+                                <option value="50">Show 50</option>
+                                <option value="100">Show 100</option>
+                                <option value="all">Show All</option>
+                            </select>
+                        </div>
                         <div class="col-12 col-md-4">
                             <input type="text" class="form-control" placeholder="Search by user name or email..." id="searchRedemptions">
                         </div>
@@ -647,6 +655,7 @@
                             </select>
                         </div>
                     </div>
+
                     <div class="table-responsive" style="font-size: 12px;">
                         <table class="table table-hover redemptions-table mb-0">
                             <thead>
@@ -654,8 +663,8 @@
                                     <th>User</th>
                                     <th>Reward</th>
                                     <th>Points Used</th>
-                                    <th>Balance Before</th>
-                                    <th>Balance After</th>
+                                    <!-- <th>Balance Before</th> -->
+                                    <!-- <th>Balance After</th> -->
                                     <th>Date Redeemed</th>
                                     <th>Recipient</th>
                                     <th>Proof of Payment</th>
@@ -663,10 +672,13 @@
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="redemptionTableBody">
                                 @if(isset($redeemhistory) && $redeemhistory->count() > 0)
                                     @foreach($redeemhistory as $history)
-                                        <tr>
+                                        <tr class="redemption-row" 
+                                            data-username="{{ strtolower($history->user->name ?? '') }}"
+                                            data-email="{{ strtolower($history->user->email ?? '') }}"
+                                            data-status="{{ strtolower($history->status) }}">
                                             <td>
                                                 <div class="user-info">
                                                     <div class="user-avatar1">
@@ -687,8 +699,8 @@
                                                     {{ number_format(abs($history->points_amount)) }}
                                                 </span>
                                             </td>
-                                            <td>{{ number_format($history->balance_before) }}</td>
-                                            <td>{{ number_format($history->balance_after) }}</td>
+                                            <!-- <td>{{ number_format($history->balance_before) }}</td> -->
+                                            <!-- <td>{{ number_format($history->balance_after) }}</td> -->
                                             <td>{{ $history->created_at->format('M d, Y h:i A') }}</td>
                                             <td>
                                                 <button class="btn-action btn-view" 
@@ -724,14 +736,14 @@
                                                     @elseif(strtolower($history->status) === 'pending')
                                                         <span style="color: #999; font-size: 12px;">Pending</span>
                                                     @else
-                                                        <span style="color: #999; font-size: 12px;">Succesfully Sent</span>
+                                                        <span style="color: #999; font-size: 12px;">Successfully Sent</span>
                                                     @endif
                                                 </div>
                                             </td>
                                         </tr>
                                     @endforeach
                                 @else
-                                    <tr>
+                                    <tr class="empty-row">
                                         <td colspan="10">
                                             <div class="empty-state">
                                                 <i class="fas fa-clipboard-list"></i>
@@ -742,6 +754,9 @@
                                 @endif
                             </tbody>
                         </table>
+                        <div class="mb-2 mt-2">
+                            <small class="text-muted" id="showingInfo"></small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -812,53 +827,74 @@
     </div>
 </div>
 
+@foreach($rewards as $reward)
 <!-- Edit Reward Modal -->
-<div class="modal fade" id="editRewardModal" tabindex="-1" aria-labelledby="editRewardModalLabel" aria-hidden="true">
+<div class="modal fade editRewardModal" id="editRewardModal{{ $reward->id }}" tabindex="-1" aria-labelledby="editRewardModalLabel{{ $reward->id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editRewardModalLabel">Edit Reward</h5>
+                <h5 class="modal-title" id="editRewardModalLabel{{ $reward->id }}">Edit Reward</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editRewardForm" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('rewards.update', $reward->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="editRewardName" class="form-label">Reward Amount <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="editRewardName" name="price_reward" placeholder="e.g., 100" required>
+                        <label for="editRewardName{{ $reward->id }}" class="form-label">Reward Amount <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="editRewardName{{ $reward->id }}" name="price_reward" 
+                               value="{{ $reward->price_reward }}" 
+                               placeholder="e.g., 100" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="editRewardDescription" class="form-label">Description <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="editRewardDescription" name="description" placeholder="e.g., Gcash" required>
+                        <label for="editRewardDescription{{ $reward->id }}" class="form-label">Description <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editRewardDescription{{ $reward->id }}" name="description" 
+                               value="{{ $reward->description }}" 
+                               placeholder="e.g., Gcash" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="editPointsRequired" class="form-label">Points Required <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="editPointsRequired" name="points_required" min="1" placeholder="e.g., 200" required>
+                        <label for="editPointsRequired{{ $reward->id }}" class="form-label">Points Required <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="editPointsRequired{{ $reward->id }}" name="points_required" 
+                               value="{{ $reward->points_required }}" 
+                               min="1" placeholder="e.g., 200" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="editExpiryDate" class="form-label">Expiry Date</label>
-                        <input type="date" class="form-control" id="editExpiryDate" name="expiry_date">
+                        <label for="editRedemptionLimit{{ $reward->id }}" class="form-label">Redemption Limit</label>
+                        <input type="text" class="form-control" id="editRedemptionLimit{{ $reward->id }}" name="redemption_limit" 
+                               value="{{ $reward->redemption_limit ?? '' }}" 
+                               placeholder="e.g., 10">
+                        <small class="form-text text-muted">Leave empty for no redemption limit</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editExpiryDate{{ $reward->id }}" class="form-label">Expiry Date</label>
+                        <input type="date" class="form-control" id="editExpiryDate{{ $reward->id }}" name="expiry_date" 
+                               value="{{ $reward->expiry_date ? \Carbon\Carbon::parse($reward->expiry_date)->format('Y-m-d') : '' }}">
                         <small class="form-text text-muted">Leave empty for no expiry</small>
                     </div>
 
                     <div class="mb-3">
-                        <label for="editRewardImage" class="form-label">Reward Image</label>
-                        <input type="file" class="form-control" id="editRewardImage" name="image" accept="image/*">
+                        <label for="editRewardImage{{ $reward->id }}" class="form-label">Reward Image</label>
+                        <input type="file" class="form-control" id="editRewardImage{{ $reward->id }}" name="image" accept="image/*">
                         <small class="form-text text-muted">Leave empty to keep current image</small>
-                        <div id="editImagePreview" class="mt-2" style="display: none;">
-                            <img src="" alt="Preview" class="img-fluid rounded">
-                        </div>
+                        
+                        @if($reward->image)
+                            <div class="mt-2">
+                                <p class="text-muted mb-1">Current Image:</p>
+                                <img src="{{ $reward->image }}" alt="Current Reward" class="img-fluid rounded" style="max-width: 200px;">
+                            </div>
+                        @endif
                     </div>
 
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="editIsActive" name="is_active" value="1">
-                        <label class="form-check-label" for="editIsActive">
+                        <input class="form-check-input" type="checkbox" id="editIsActive{{ $reward->id }}" name="is_active" 
+                               value="1" {{ $reward->is_active == 1 ? 'checked' : '' }}>
+                        <label class="form-check-label" for="editIsActive{{ $reward->id }}">
                             Active (Available for redemption)
-                        </label>
+                        </label>    
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -869,6 +905,7 @@
         </div>
     </div>
 </div>
+@endforeach
 
 <!-- Recipient Modal -->
 <div class="modal fade" id="recipientModal" tabindex="-1" aria-labelledby="recipientModalLabel" aria-hidden="true">
@@ -938,71 +975,39 @@
 @endif
 
 <script>
-    // Store rewards data for editing
-    const rewardsData = {
-        @foreach($rewards as $reward)
-            {{ $reward->id }}: {
-                price_reward: {{ $reward->price_reward }},
-                description: "{{ $reward->description }}",
-                points_required: {{ $reward->points_required }},
-                expiry_date: "{{ $reward->expiry_date ?? '' }}",
-                is_active: {{ $reward->is_active ? 'true' : 'false' }},
-                image: {!! json_encode($reward->image ?? '') !!}
-            },
-        @endforeach
-    };
-
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        
-        event.target.closest('.tab-button').classList.add('active');
-        document.getElementById(tabName + '-tab').classList.add('active');
-        
-        const addRewardBtn = document.getElementById('addRewardBtnContainer');
-        if (tabName === 'rewards') {
-            addRewardBtn.style.display = 'block';
-        } else {
-            addRewardBtn.style.display = 'none';
-        }
-    }
-
-    // Edit Reward Function
-    function editReward(rewardId) {
-        const reward = rewardsData[rewardId];
-        
-        if (!reward) {
+    // Handle Edit Reward with Claims Check
+    function handleEditReward(rewardId, hasClaims) {
+        if (hasClaims) {
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Reward data not found',
-                confirmButtonColor: '#E74C3C'
+                icon: 'warning',
+                title: 'Cannot Edit Reward',
+                text: 'You are not able to edit this reward because it has already been claimed by users.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
             });
             return;
         }
         
-        // Populate the edit form
-        document.getElementById('editRewardName').value = reward.price_reward;
-        document.getElementById('editRewardDescription').value = reward.description;
-        document.getElementById('editPointsRequired').value = reward.points_required;
-        document.getElementById('editExpiryDate').value = reward.expiry_date;
-        document.getElementById('editIsActive').checked = reward.is_active;
-        
-        // Show current image if exists
-        const imagePreview = document.getElementById('editImagePreview');
-        if (reward.image) {
-            imagePreview.querySelector('img').src = reward.image;
-            imagePreview.style.display = 'block';
-        } else {
-            imagePreview.style.display = 'none';
+        // Open the edit modal
+        const modal = new bootstrap.Modal(document.getElementById('editRewardModal' + rewardId));
+        modal.show();
+    }
+
+    // Handle Delete Reward with Claims Check
+    function handleDeleteReward(rewardId, hasClaims) {
+        if (hasClaims) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cannot Delete Reward',
+                text: 'You are not able to delete this reward because it has already been claimed by users.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return;
         }
         
-        // Set form action
-        document.getElementById('editRewardForm').action = "{{ url('rewards') }}/" + rewardId;
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('editRewardModal'));
-        modal.show();
+        // Proceed with delete confirmation
+        deleteReward(rewardId);
     }
 
     // Delete Reward Function
@@ -1042,52 +1047,99 @@
         });
     }
 
-    function handleImagePreview(e) {
-        const file = e.target.files[0];
-        const imagePreview = document.getElementById('imagePreview');
+    // Filter and Show Entries
+    document.addEventListener('DOMContentLoaded', function() {
+        const entriesSelect = document.getElementById('entriesPerPage');
+        const searchInput = document.getElementById('searchRedemptions');
+        const statusFilter = document.getElementById('filterStatus');
+        const showingInfo = document.getElementById('showingInfo');
+
+        function filterAndShowEntries() {
+            const rows = document.querySelectorAll('.redemption-row');
+            const entries = entriesSelect.value;
+            const search = searchInput.value.toLowerCase();
+            const status = statusFilter.value;
+
+            let visibleCount = 0;
+            let totalFiltered = 0;
+
+            rows.forEach(row => {
+                const username = row.getAttribute('data-username');
+                const email = row.getAttribute('data-email');
+                const rowStatus = row.getAttribute('data-status');
+
+                // Check search filter
+                const matchesSearch = search === '' || 
+                    username.includes(search) || 
+                    email.includes(search);
+
+                // Check status filter
+                const matchesStatus = status === 'all' || rowStatus === status;
+
+                if (matchesSearch && matchesStatus) {
+                    totalFiltered++;
+                    if (entries === 'all' || visibleCount < parseInt(entries)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update showing info
+            if (totalFiltered === 0) {
+                showingInfo.textContent = 'No entries found';
+            } else {
+                showingInfo.textContent = `Showing ${visibleCount} of ${totalFiltered} entries`;
+            }
+        }
+
+        // Event listeners
+        if (entriesSelect) entriesSelect.addEventListener('change', filterAndShowEntries);
+        if (searchInput) searchInput.addEventListener('input', filterAndShowEntries);
+        if (statusFilter) statusFilter.addEventListener('change', filterAndShowEntries);
+
+        // Initial display
+        filterAndShowEntries();
+    });
+
+    // Store rewards data for editing
+    const rewardsData = {
+        @foreach($rewards as $reward)
+            {{ $reward->id }}: {
+                price_reward: {{ $reward->price_reward }},
+                description: "{{ $reward->description }}",
+                points_required: {{ $reward->points_required }},
+                expiry_date: "{{ $reward->expiry_date ?? '' }}",
+                is_active: {{ $reward->is_active ? 'true' : 'false' }},
+                image: {!! json_encode($reward->image ?? '') !!}
+            },
+        @endforeach
+    };
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         
-        if (file) {
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'File Too Large',
-                    text: `Image size: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum allowed: 5MB`,
-                    confirmButtonColor: '#E74C3C'
-                });
-                e.target.value = '';
-                if (imagePreview) imagePreview.style.display = 'none';
-                return;
-            }
-
-            // Check file type
-            if (!file.type.match('image.*')) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid File Type',
-                    text: 'Please upload an image file (JPG, PNG, GIF)',
-                    confirmButtonColor: '#E74C3C'
-                });
-                e.target.value = '';
-                if (imagePreview) imagePreview.style.display = 'none';
-                return;
-            }
-
-            // Show preview
-            if (imagePreview) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.querySelector('img').src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+        event.target.closest('.tab-button').classList.add('active');
+        document.getElementById(tabName + '-tab').classList.add('active');
+        
+        const addRewardBtn = document.getElementById('addRewardBtnContainer');
+        if (addRewardBtn) {
+            if (tabName === 'rewards') {
+                addRewardBtn.style.display = 'block';
+            } else {
+                addRewardBtn.style.display = 'none';
             }
         }
     }
 
-    function handleEditImagePreview(e) {
+    function handleImagePreview(e) {
         const file = e.target.files[0];
-        const imagePreview = document.getElementById('editImagePreview');
+        const imagePreview = document.getElementById('imagePreview');
         
         if (file) {
             // Check file size (max 5MB)
@@ -1423,21 +1475,32 @@
         });
     }
 
-    document.getElementById('searchRedemptions')?.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        filterTable(searchTerm, document.getElementById('filterStatus').value);
-    });
+    // Event listeners for search and filters
+    const searchInput = document.getElementById('searchRedemptions');
+    const filterStatus = document.getElementById('filterStatus');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filterTable(searchTerm, filterStatus ? filterStatus.value : 'all');
+        });
+    }
+    
+    if (filterStatus) {
+        filterStatus.addEventListener('change', function(e) {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            filterTable(searchTerm, e.target.value);
+        });
+    }
 
-    document.getElementById('filterStatus')?.addEventListener('change', function(e) {
-        const searchTerm = document.getElementById('searchRedemptions').value.toLowerCase();
-        filterTable(searchTerm, e.target.value);
-    });
+    // Image preview handlers
+    const rewardImage = document.getElementById('rewardImage');
+    if (rewardImage) {
+        rewardImage.addEventListener('change', handleImagePreview);
+    }
 
-    document.getElementById('rewardImage')?.addEventListener('change', handleImagePreview);
-    document.getElementById('editRewardImage')?.addEventListener('change', handleEditImagePreview);
-</script>
-<script>
-   const recipientData = {
+    // Recipient Data
+    const recipientData = {
         @foreach($redeemhistory as $history)
             {{ $history->id }}: {
                 gcash_number: "{{ $history->number ?? '' }}",
@@ -1475,50 +1538,46 @@
                     <div class="recipient-info-value">${data.gcash_name || 'N/A'}</div>
                 </div>
             `;
-        }
-        
-        else if (hasQrCode) {
+        } else if (hasQrCode) {
             content = `
                 <div class="recipient-qr-container">
                     <div class="recipient-info-label mb-3">GCash QR Code</div>
                     <img src="${data.qr_code}" alt="QR Code" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 </div>
             `;
-        }
-        else {
+        } else {
             content = '<p class="text-center text-muted">No recipient information available.</p>';
         }
         
         modalBody.innerHTML = content;
         modal.show();
     }
-</script>
-<script>
-function viewProofOfPayment(imageUrl) {
-    if (!imageUrl) {
+
+    function viewProofOfPayment(imageUrl) {
+        if (!imageUrl) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Proof of Payment',
+                text: 'Proof of payment has not been uploaded yet.',
+                confirmButtonColor: '#5DADE2'
+            });
+            return;
+        }
+        
         Swal.fire({
-            icon: 'info',
-            title: 'No Proof of Payment',
-            text: 'Proof of payment has not been uploaded yet.',
-            confirmButtonColor: '#5DADE2'
+            title: 'Proof of Payment',
+            html: `
+                <div style="text-align: center; padding: 10px;">
+                    <img src="${imageUrl}" 
+                         alt="Proof of Payment" 
+                         style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                </div>
+            `,
+            width: '600px',
+            confirmButtonText: 'Close',
+            confirmButtonColor: '#5DADE2',
+            showCloseButton: true
         });
-        return;
     }
-    
-    Swal.fire({
-        title: 'Proof of Payment',
-        html: `
-            <div style="text-align: center; padding: 10px;">
-                <img src="${imageUrl}" 
-                     alt="Proof of Payment" 
-                     style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            </div>
-        `,
-        width: '600px',
-        confirmButtonText: 'Close',
-        confirmButtonColor: '#5DADE2',
-        showCloseButton: true
-    });
-}
 </script>
 @endsection
