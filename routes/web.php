@@ -30,6 +30,8 @@ Route::get('/transactions','TransactionController@index')->name('transactions');
 Route::delete('/transactions/{id}', 'TransactionController@destroy')->name('transactions.destroy');
 Route::post('/transactions/bulk-delete', 'TransactionController@bulkDelete')->name('transactions.bulkDelete');
 
+Route::get('/get-province-details', 'HomeController@getProvinceDetails')->name('province.details');
+
 Route::get('/about', 'HomeController@about')->name('about');
 Route::get('/product', 'ProductController@index')->name('product.index');
 Route::post('/product', 'ProductController@store')->name('product.store');

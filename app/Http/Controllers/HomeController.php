@@ -35,9 +35,8 @@ class HomeController extends Controller
         $customer = "";
         $threeDaysAgo = Carbon::now()->subDays(7)->toDateString();
         
-        // Get selected year and month from request
         $selectedYear = $request->get('year', Carbon::now()->year);
-        $selectedMonth = $request->get('month', null); // null means yearly view
+        $selectedMonth = $request->get('month', null);
         $viewType = $selectedMonth ? 'monthly' : 'yearly';
         
         $customers_less = Client::whereDoesntHave('latestTransaction', function ($q) use ($threeDaysAgo) {
@@ -80,7 +79,6 @@ class HomeController extends Controller
             return $transaction->price * $transaction->qty;
         });
 
-
         // Get chart data based on view type
         if ($viewType === 'monthly') {
             $chartData = $this->getDailyData($selectedYear, $selectedMonth);
@@ -120,6 +118,29 @@ class HomeController extends Controller
         $salesTrend = $this->calculateSalesTrend();
         $qtyTrend = $this->calculateQtyTrend();
 
+        $threeDaysAgo = Carbon::now()->subDays(3)->toDateString();
+
+        $dealers_inactive = Dealer::whereDoesntHave('sales', function ($q) use ($threeDaysAgo) {
+            $q->where('created_at', '>=', $threeDaysAgo);
+        })
+        ->whereHas('sales')
+        ->with(['sales' => function($query) {
+            $query->orderBy('created_at', 'desc')->limit(1);
+        }])
+        ->get()
+        ->map(function($dealer) {
+            $lastTransaction = $dealer->sales->first();
+            $dealer->last_transaction_date = $lastTransaction ? $lastTransaction->created_at : null;
+            $dealer->days_since_transaction = $lastTransaction 
+                ? Carbon::parse($lastTransaction->created_at)->diffInDays(Carbon::now()) 
+                : null;
+            return $dealer;
+        })
+        ->sortByDesc('days_since_transaction');
+
+        // Get map data
+        $mapData = $this->getPhilippineMapData();
+
         return view('home',
             array(
                 'transactions' => $transactions,
@@ -142,10 +163,260 @@ class HomeController extends Controller
                 'view_type' => $viewType,
                 'dealer_available_points' => $dealerAvailablePoints ?? 0,
                 'customer_available_points' => $customerAvailablePoints ?? 0,
+                'dealers_inactive' => $dealers_inactive,
+                'map_data' => $mapData,
             )
         );
     }
 
+    private function getPhilippineMapData()
+    {
+        $transactions = TransactionDetail::whereNotNull('client_address')
+            ->where('client_address', '!=', '')
+            ->get();
+        
+        \Log::info('=== MAP DATA GENERATION ===');
+        \Log::info('Total transactions with addresses: ' . $transactions->count());
+        
+        if ($transactions->isEmpty()) {
+            \Log::info('No transactions with addresses found');
+            return [];
+        }
+        
+        \Log::info('Sample addresses:');
+        foreach ($transactions->take(5) as $t) {
+            \Log::info('  - ' . $t->client_address);
+        }
+        
+        $provinceMapping = [
+            'PH-SOR' => ['SORSOGON'],
+            'PH-ABR' => ['ABRA'],
+            'PH-AGN' => ['AGUSAN DEL NORTE', 'AGUSAN NORTE'],
+            'PH-AGS' => ['AGUSAN DEL SUR', 'AGUSAN SUR'],
+            'PH-AKL' => ['AKLAN'],
+            'PH-ALB' => ['ALBAY'],
+            'PH-ANT' => ['ANTIQUE'],
+            'PH-APA' => ['APAYAO'],
+            'PH-AUR' => ['AURORA'],
+            'PH-BAS' => ['BASILAN'],
+            'PH-BAN' => ['BATAAN'],
+            'PH-BTG' => ['BATANGAS'],
+            'PH-BTN' => ['BATANES'],
+            'PH-BEN' => ['BENGUET'],
+            'PH-BIL' => ['BILIRAN'],
+            'PH-BOH' => ['BOHOL'],
+            'PH-BUK' => ['BUKIDNON'],
+            'PH-BUL' => ['BULACAN'],
+            'PH-CAG' => ['CAGAYAN'],
+            'PH-CAN' => ['CAMARINES NORTE', 'CAM. NORTE'],
+            'PH-CAS' => ['CAMARINES SUR', 'CAM. SUR'],
+            'PH-CAM' => ['CAMIGUIN'],
+            'PH-CAP' => ['CAPIZ'],
+            'PH-CAT' => ['CATANDUANES'],
+            'PH-CAV' => ['CAVITE'],
+            'PH-CEB' => ['CEBU'],
+            'PH-COM' => ['COMPOSTELA VALLEY', 'DAVAO DE ORO'],
+            'PH-NCO' => ['COTABATO', 'NORTH COTABATO'],
+            'PH-DAV' => ['DAVAO DEL NORTE', 'DAVAO NORTE'],
+            'PH-DAS' => ['DAVAO DEL SUR', 'DAVAO SUR'],
+            'PH-DAO' => ['DAVAO ORIENTAL'],
+            'PH-DIN' => ['DINAGAT', 'DINAGAT ISLANDS'],
+            'PH-EAS' => ['EASTERN SAMAR', 'EAST SAMAR'],
+            'PH-GUI' => ['GUIMARAS'],
+            'PH-IFU' => ['IFUGAO'],
+            'PH-ILN' => ['ILOCOS NORTE'],
+            'PH-ILS' => ['ILOCOS SUR'],
+            'PH-ILI' => ['ILOILO'],
+            'PH-ISA' => ['ISABELA'],
+            'PH-KAL' => ['KALINGA'],
+            'PH-LUN' => ['LA UNION'],
+            'PH-LAG' => ['LAGUNA'],
+            'PH-LAN' => ['LANAO DEL NORTE', 'LANAO NORTE'],
+            'PH-LAS' => ['LANAO DEL SUR', 'LANAO SUR'],
+            'PH-LEY' => ['LEYTE'],
+            'PH-MG' => ['MAGUINDANAO'],
+            'PH-MAD' => ['MARINDUQUE'],
+            'PH-MAS' => ['MASBATE'],
+            'PH-MNL' => ['MANILA', 'METRO MANILA', 'NCR', 'MAKATI', 'QUEZON CITY', 'PASIG', 'TAGUIG', 'PARANAQUE', 'MUNTINLUPA', 'CALOOCAN', 'MANDALUYONG'],
+            'PH-MDC' => ['MINDORO OCCIDENTAL', 'OCCIDENTAL MINDORO'],
+            'PH-MDR' => ['MINDORO ORIENTAL', 'ORIENTAL MINDORO'],
+            'PH-MSC' => ['MISAMIS OCCIDENTAL'],
+            'PH-MSR' => ['MISAMIS ORIENTAL'],
+            'PH-MOU' => ['MOUNTAIN PROVINCE'],
+            'PH-NEC' => ['NEGROS OCCIDENTAL'],
+            'PH-NER' => ['NEGROS ORIENTAL'],
+            'PH-NSA' => ['NORTHERN SAMAR', 'NORTH SAMAR'],
+            'PH-NUE' => ['NUEVA ECIJA'],
+            'PH-NUV' => ['NUEVA VIZCAYA'],
+            'PH-PAM' => ['PAMPANGA'],
+            'PH-PAN' => ['PANGASINAN'],
+            'PH-PLW' => ['PALAWAN'],
+            'PH-QUE' => ['QUEZON'],
+            'PH-QUI' => ['QUIRINO'],
+            'PH-RIZ' => ['RIZAL'],
+            'PH-ROM' => ['ROMBLON'],
+            'PH-WSA' => ['SAMAR', 'WESTERN SAMAR'],
+            'PH-SAR' => ['SARANGANI'],
+            'PH-SIG' => ['SIQUIJOR'],
+            'PH-SCO' => ['SOUTH COTABATO'],
+            'PH-SLE' => ['SOUTHERN LEYTE'],
+            'PH-SUK' => ['SULTAN KUDARAT'],
+            'PH-SLU' => ['SULU'],
+            'PH-SUN' => ['SURIGAO DEL NORTE', 'SURIGAO NORTE'],
+            'PH-SUR' => ['SURIGAO DEL SUR', 'SURIGAO SUR'],
+            'PH-TAR' => ['TARLAC'],
+            'PH-TAW' => ['TAWI-TAWI'],
+            'PH-ZMB' => ['ZAMBALES'],
+            'PH-ZAN' => ['ZAMBOANGA DEL NORTE', 'ZAMBOANGA NORTE'],
+            'PH-ZAS' => ['ZAMBOANGA DEL SUR', 'ZAMBOANGA SUR'],
+            'PH-ZSI' => ['ZAMBOANGA SIBUGAY'],
+        ];
+        
+        $provinceCounts = [];
+        $unmatchedCount = 0;
+        
+        foreach ($transactions as $transaction) {
+            $address = strtoupper(trim($transaction->client_address));
+            $matched = false;
+            
+            foreach ($provinceMapping as $pathId => $provinceNames) {
+                foreach ($provinceNames as $provinceName) {
+                    if (strpos($address, $provinceName) !== false) {
+                        if (!isset($provinceCounts[$pathId])) {
+                            $provinceCounts[$pathId] = 0;
+                        }
+                        $provinceCounts[$pathId]++;
+                        $matched = true;
+                        \Log::info("Matched '{$address}' to {$pathId} ({$provinceName})");
+                        break 2;
+                    }
+                }
+            }
+            
+            if (!$matched) {
+                $unmatchedCount++;
+                \Log::info("Unmatched: {$address}");
+            }
+        }
+        
+        \Log::info('Matched provinces: ' . count($provinceCounts));
+        \Log::info('Province counts: ' . json_encode($provinceCounts));
+        \Log::info('Unmatched addresses: ' . $unmatchedCount);
+        
+        if (empty($provinceCounts)) {
+            \Log::info('No provinces matched!');
+            return [];
+        }
+        
+        $max = max($provinceCounts);
+        $min = min($provinceCounts);
+        $range = $max - $min;
+        
+        $result = [];
+        
+        if ($range > 0) {
+            $highThreshold = $min + ($range * 0.67);
+            $avgThreshold = $min + ($range * 0.33);
+            
+            foreach ($provinceCounts as $pathId => $count) {
+                $level = $count >= $highThreshold ? 'high' : ($count >= $avgThreshold ? 'average' : 'low');
+                $result[$pathId] = [
+                    'count' => $count,
+                    'level' => $level
+                ];
+            }
+        } else {
+            foreach ($provinceCounts as $pathId => $count) {
+                $result[$pathId] = [
+                    'count' => $count,
+                    'level' => 'average'
+                ];
+            }
+        }
+        
+        \Log::info('Final result: ' . json_encode($result));
+        \Log::info('=== END MAP DATA ===');
+        
+        return $result;
+    }
+
+    public function getProvinceDetails(Request $request)
+    {
+        $provinceName = $request->get('province');
+        
+        $transactions = TransactionDetail::whereNotNull('client_address')
+            ->where('client_address', 'LIKE', "%{$provinceName}%")
+            ->with(['customer', 'dealer'])
+            ->get();
+        
+        $locationData = [];
+        
+        foreach ($transactions as $transaction) {
+            $address = $transaction->client_address;
+            
+            $location = $this->extractLocation($address, $provinceName);
+            
+            if (!isset($locationData[$location])) {
+                $locationData[$location] = [
+                    'location' => $location,
+                    'full_address' => $address,
+                    'transaction_count' => 0,
+                    'total_qty' => 0,
+                    'total_amount' => 0,
+                    'customer_ids' => [],
+                    'dealer_ids' => []
+                ];
+            }
+            
+            $locationData[$location]['transaction_count']++;
+            $locationData[$location]['total_qty'] += $transaction->qty;
+            $locationData[$location]['total_amount'] += ($transaction->qty * $transaction->price);
+            $locationData[$location]['customer_ids'][] = $transaction->client_id;
+            $locationData[$location]['dealer_ids'][] = $transaction->dealer_id;
+        }
+        
+        $locations = collect($locationData)->map(function($item) {
+            return [
+                'location' => $item['location'],
+                'full_address' => $item['full_address'],
+                'transaction_count' => $item['transaction_count'],
+                'total_qty' => $item['total_qty'],
+                'total_amount' => number_format($item['total_amount'], 2, '.', ''),
+                'customer_count' => count(array_unique($item['customer_ids'])),
+                'dealer_count' => count(array_unique($item['dealer_ids']))
+            ];
+        })->sortByDesc('transaction_count')->values();
+        
+        $summary = [
+            'total_transactions' => $transactions->count(),
+            'total_qty' => $transactions->sum('qty'),
+            'total_amount' => number_format($transactions->sum(function($t) {
+                return $t->qty * $t->price;
+            }), 2, '.', ''),
+            'unique_customers' => $transactions->pluck('client_id')->unique()->count(),
+            'active_dealers' => $transactions->pluck('dealer_id')->unique()->count(),
+            'total_locations' => count($locationData)
+        ];
+        
+        return response()->json([
+            'province' => $provinceName,
+            'summary' => $summary,
+            'locations' => $locations
+        ]);
+    }
+
+    private function extractLocation($address, $provinceName)
+    {
+        $location = str_replace($provinceName, '', strtoupper($address));
+        $location = trim($location, ', ');
+        
+        if (empty($location)) {
+            return $provinceName . ' (Main)';
+        }
+        
+        return $location;
+    }
+    
     public function getChartDataAjax(Request $request)
     {
         $year = $request->get('year', Carbon::now()->year);
@@ -191,9 +462,6 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Get monthly sales data for a specific year
-     */
     private function getMonthlyData($year)
     {
         $year = (int) $year;
@@ -225,9 +493,6 @@ class HomeController extends Controller
         ];
     }
 
-    /**
-     * Get daily sales data for a specific year and month
-     */
     private function getDailyData($year, $month)
     {
         $year = (int) $year;
@@ -263,7 +528,6 @@ class HomeController extends Controller
         ];
     }
 
-   
     private function getAvailableYears()
     {
         $years = DB::table('transaction_details')
@@ -280,9 +544,6 @@ class HomeController extends Controller
         return $years;
     }
 
-    /**
-     * Get available months for a specific year
-     */
     private function getAvailableMonths($year)
     {
         $months = DB::table('transaction_details')
