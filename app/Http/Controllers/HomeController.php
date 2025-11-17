@@ -175,17 +175,8 @@ class HomeController extends Controller
             ->where('client_address', '!=', '')
             ->get();
         
-        \Log::info('=== MAP DATA GENERATION ===');
-        \Log::info('Total transactions with addresses: ' . $transactions->count());
-        
         if ($transactions->isEmpty()) {
-            \Log::info('No transactions with addresses found');
             return [];
-        }
-        
-        \Log::info('Sample addresses:');
-        foreach ($transactions->take(5) as $t) {
-            \Log::info('  - ' . $t->client_address);
         }
         
         $provinceMapping = [
@@ -272,72 +263,158 @@ class HomeController extends Controller
             'PH-ZSI' => ['ZAMBOANGA SIBUGAY'],
         ];
         
-        $provinceCounts = [];
-        $unmatchedCount = 0;
+        $totalBarangaysPerProvince = [
+            'PH-SOR' => 541,
+            'PH-ABR' => 27,
+            'PH-AGN' => 343,
+            'PH-AGS' => 333,
+            'PH-AKL' => 327,
+            'PH-ALB' => 720,
+            'PH-ANT' => 590,
+            'PH-APA' => 133,
+            'PH-AUR' => 151,
+            'PH-BAS' => 414,
+            'PH-BAN' => 237,
+            'PH-BTG' => 1078,
+            'PH-BTN' => 29,
+            'PH-BEN' => 140,
+            'PH-BIL' => 132,
+            'PH-BOH' => 1109,
+            'PH-BUK' => 464,
+            'PH-BUL' => 569,
+            'PH-CAG' => 820,
+            'PH-CAN' => 282,
+            'PH-CAS' => 1063,
+            'PH-CAM' => 58,
+            'PH-CAP' => 473,
+            'PH-CAT' => 315,
+            'PH-CAV' => 829,
+            'PH-CEB' => 1066,
+            'PH-COM' => 330,
+            'PH-NCO' => 543,
+            'PH-DAV' => 407,
+            'PH-DAS' => 545,
+            'PH-DAO' => 183,
+            'PH-DIN' => 100,
+            'PH-EAS' => 597,
+            'PH-GUI' => 98,
+            'PH-IFU' => 175,
+            'PH-ILN' => 557,
+            'PH-ILS' => 768,
+            'PH-ILI' => 1721,
+            'PH-ISA' => 1018,
+            'PH-KAL' => 152,
+            'PH-LUN' => 576,
+            'PH-LAG' => 674,
+            'PH-LAN' => 615,
+            'PH-LAS' => 1156,
+            'PH-LEY' => 1641,
+            'PH-MG' => 508,
+            'PH-MAD' => 218,
+            'PH-MAS' => 550,
+            'PH-MNL' => 1710,
+            'PH-MDC' => 213,
+            'PH-MDR' => 426,
+            'PH-MSC' => 482,
+            'PH-MSR' => 482,
+            'PH-MOU' => 144,
+            'PH-NEC' => 662,
+            'PH-NER' => 557,
+            'PH-NSA' => 569,
+            'PH-NUE' => 849,
+            'PH-NUV' => 275,
+            'PH-PAM' => 538,
+            'PH-PAN' => 1364,
+            'PH-PLW' => 433,
+            'PH-QUE' => 1242,
+            'PH-QUI' => 132,
+            'PH-RIZ' => 188,
+            'PH-ROM' => 279,
+            'PH-WSA' => 1201,
+            'PH-SAR' => 140,
+            'PH-SIG' => 107,
+            'PH-SCO' => 218,
+            'PH-SLE' => 500,
+            'PH-SUK' => 253,
+            'PH-SLU' => 410,
+            'PH-SUN' => 342,
+            'PH-SUR' => 309,
+            'PH-TAR' => 511,
+            'PH-TAW' => 276,
+            'PH-ZMB' => 247,
+            'PH-ZAN' => 691,
+            'PH-ZAS' => 681,
+            'PH-ZSI' => 402,
+        ];
+        
+        $provinceBarangays = [];
         
         foreach ($transactions as $transaction) {
             $address = strtoupper(trim($transaction->client_address));
-            $matched = false;
             
             foreach ($provinceMapping as $pathId => $provinceNames) {
                 foreach ($provinceNames as $provinceName) {
                     if (strpos($address, $provinceName) !== false) {
-                        if (!isset($provinceCounts[$pathId])) {
-                            $provinceCounts[$pathId] = 0;
+                        if (!isset($provinceBarangays[$pathId])) {
+                            $provinceBarangays[$pathId] = [];
                         }
-                        $provinceCounts[$pathId]++;
-                        $matched = true;
-                        \Log::info("Matched '{$address}' to {$pathId} ({$provinceName})");
+                        
+                        $barangay = $this->extractBarangay($address);
+                        $provinceBarangays[$pathId][$barangay] = true;
+                        
                         break 2;
                     }
                 }
             }
-            
-            if (!$matched) {
-                $unmatchedCount++;
-                \Log::info("Unmatched: {$address}");
-            }
         }
         
-        \Log::info('Matched provinces: ' . count($provinceCounts));
-        \Log::info('Province counts: ' . json_encode($provinceCounts));
-        \Log::info('Unmatched addresses: ' . $unmatchedCount);
-        
-        if (empty($provinceCounts)) {
-            \Log::info('No provinces matched!');
+        if (empty($provinceBarangays)) {
             return [];
         }
         
-        $max = max($provinceCounts);
-        $min = min($provinceCounts);
-        $range = $max - $min;
-        
         $result = [];
         
-        if ($range > 0) {
-            $highThreshold = $min + ($range * 0.67);
-            $avgThreshold = $min + ($range * 0.33);
+        foreach ($provinceBarangays as $pathId => $barangays) {
+            $reachedBarangays = count($barangays);
+            $totalBarangays = $totalBarangaysPerProvince[$pathId] ?? 100;
             
-            foreach ($provinceCounts as $pathId => $count) {
-                $level = $count >= $highThreshold ? 'high' : ($count >= $avgThreshold ? 'average' : 'low');
-                $result[$pathId] = [
-                    'count' => $count,
-                    'level' => $level
-                ];
+            $percentage = round(($reachedBarangays / $totalBarangays) * 100, 2);
+            
+            if ($percentage >= 50) {
+                $level = 'high';
+            } elseif ($percentage >= 20) {
+                $level = 'average';
+            } else {
+                $level = 'low';
             }
-        } else {
-            foreach ($provinceCounts as $pathId => $count) {
-                $result[$pathId] = [
-                    'count' => $count,
-                    'level' => 'average'
-                ];
+            
+            $result[$pathId] = [
+                'count' => $reachedBarangays,
+                'total' => $totalBarangays,
+                'level' => $level,
+                'percentage' => $percentage
+            ];
+        }
+        
+        return $result;
+    }
+
+    private function extractBarangay($address)
+    {
+        $patterns = [
+            '/BRGY\.?\s+([A-Z\s]+?)(?:,|$)/i',
+            '/BARANGAY\s+([A-Z\s]+?)(?:,|$)/i',
+            '/BARIO\s+([A-Z\s]+?)(?:,|$)/i',
+        ];
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $address, $matches)) {
+                return trim($matches[1]);
             }
         }
         
-        \Log::info('Final result: ' . json_encode($result));
-        \Log::info('=== END MAP DATA ===');
-        
-        return $result;
+        $parts = explode(',', $address);
+        return trim($parts[0]);
     }
 
     public function getProvinceDetails(Request $request)

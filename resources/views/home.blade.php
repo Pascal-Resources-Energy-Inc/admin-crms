@@ -1269,6 +1269,7 @@ document.addEventListener('DOMContentLoaded', function() {
         high: '#5BC2E7',
         average: '#02437B',
         low: '#DA291C',
+        none: '#f8f8f8'
     };
     
     const allPaths = document.querySelectorAll('#philippineMap svg path');
@@ -1276,9 +1277,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let coloredCount = 0;
     
+    let tooltip = document.getElementById('mapTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'mapTooltip';
+        tooltip.className = 'map-tooltip';
+        tooltip.style.display = 'none';
+        document.body.appendChild(tooltip);
+    }
+    
     allPaths.forEach(path => {
         const pathId = path.getAttribute('id');
         const title = path.getAttribute('title');
+        
+        if (!title) {
+            return;
+        }
         
         if (pathId && mapData[pathId]) {
             const data = mapData[pathId];
@@ -1289,11 +1303,13 @@ document.addEventListener('DOMContentLoaded', function() {
             path.style.transition = 'all 0.3s ease';
             
             coloredCount++;
-            console.log(`Colored ${pathId} (${title}): ${data.level} - ${data.count} transactions`);
+            console.log(`Colored ${pathId} (${title}): ${data.level} - ${data.count}/${data.total} barangays (${data.percentage}%)`);
             
             path.addEventListener('mouseenter', function(e) {
-                path.style.opacity = '0.8';
-                showTooltip(e, title, data.count, data.level);
+                this.style.opacity = '0.8';
+                this.style.strokeWidth = '1.5';
+                this.style.stroke = '#ffcc00';
+                showTooltip(e, title, data.count, data.total, data.level, data.percentage);
             });
             
             path.addEventListener('mousemove', function(e) {
@@ -1301,7 +1317,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             path.addEventListener('mouseleave', function() {
-                path.style.opacity = '1';
+                this.style.opacity = '1';
+                this.style.strokeWidth = '0.5';
+                this.style.stroke = '#000000';
                 hideTooltip();
             });
             
@@ -1310,11 +1328,107 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             path.style.fill = colors.none;
-            if (pathId) {
-                console.log(`No data for ${pathId} (${title})`);
-            }
+            path.style.cursor = 'pointer';
+            path.style.transition = 'all 0.3s ease';
+            
+            path.addEventListener('mouseenter', function(e) {
+                this.style.opacity = '0.8';
+                this.style.strokeWidth = '1.5';
+                this.style.stroke = '#cccccc';
+                showEmptyTooltip(e, title);
+            });
+            
+            path.addEventListener('mousemove', function(e) {
+                updateTooltipPosition(e);
+            });
+            
+            path.addEventListener('mouseleave', function() {
+                this.style.opacity = '1';
+                this.style.strokeWidth = '0.5';
+                this.style.stroke = '#000000';
+                hideTooltip();
+            });
         }
     });
+    
+    console.log(`Successfully colored ${coloredCount} provinces`);
+    console.log('=== MAP DEBUG END ===');
+    
+    function showTooltip(event, province, reachedBarangays, totalBarangays, level, percentage) {
+        const tooltip = document.getElementById('mapTooltip');
+        const levelText = level.charAt(0).toUpperCase() + level.slice(1);
+        const levelColor = colors[level];
+        
+        tooltip.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #1f2937;">
+                ${province}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="display: inline-block; width: 14px; height: 14px; background-color: ${levelColor}; border-radius: 3px;"></span>
+                <span style="color: #4b5563; font-size: 13px; font-weight: 600;">${levelText} Activity</span>
+            </div>
+            <div style="color: #6b7280; font-size: 12px; padding-left: 22px; margin-bottom: 4px;">
+                ${percentage}% of barangays reached
+            </div>
+            <div style="color: #9ca3af; font-size: 11px; padding-left: 22px; font-style: italic;">
+                ${reachedBarangays} out of ${totalBarangays} barangays
+            </div>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; text-align: center;">
+                Click to view details
+            </div>
+        `;
+        tooltip.style.display = 'block';
+        updateTooltipPosition(event);
+    }
+    
+    function showEmptyTooltip(event, province) {
+        const tooltip = document.getElementById('mapTooltip');
+        
+        tooltip.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #1f2937;">
+                ${province}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="ti ti-info-circle" style="font-size: 14px; color: #9ca3af;"></i>
+                <span style="color: #6b7280; font-size: 12px;">No barangays reached yet</span>
+            </div>
+        `;
+        tooltip.style.display = 'block';
+        updateTooltipPosition(event);
+    }
+    
+    function updateTooltipPosition(event) {
+        const tooltip = document.getElementById('mapTooltip');
+        const offsetX = 15;
+        const offsetY = 15;
+        
+        // Get viewport dimensions
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const tooltipWidth = tooltipRect.width;
+        const tooltipHeight = tooltipRect.height;
+        
+        let left = event.pageX + offsetX;
+        let top = event.pageY + offsetY;
+        
+        if (event.clientX + tooltipWidth + offsetX > viewportWidth) {
+            left = event.pageX - tooltipWidth - offsetX;
+        }
+        
+        if (event.clientY + tooltipHeight + offsetY > viewportHeight) {
+            top = event.pageY - tooltipHeight - offsetY;
+        }
+        
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+    }
+    
+    function hideTooltip() {
+        const tooltip = document.getElementById('mapTooltip');
+        tooltip.style.display = 'none';
+    }
 
     let provinceData = [];
     let filteredProvinceData = [];
@@ -1484,6 +1598,22 @@ document.addEventListener('DOMContentLoaded', function() {
         renderProvinceTable();
     }
 
+    function exportProvinceData() {
+        const provinceName = document.getElementById('provinceName').textContent;
+        let csv = 'Location,Full Address,Transactions,Quantity,Customers,Total Sales\n';
+        
+        filteredProvinceData.forEach(item => {
+            csv += `"${item.location}","${item.full_address}",${item.transaction_count},${item.total_qty},${item.customer_count},${item.total_amount}\n`;
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${provinceName}_transactions.csv`;
+        a.click();
+    }
+
     document.getElementById('provinceSearch').addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLowerCase();
         filteredProvinceData = provinceData.filter(item => 
@@ -1528,62 +1658,9 @@ document.addEventListener('DOMContentLoaded', function() {
         renderProvinceTable();
     });
 
-    function exportProvinceData() {
-        const provinceName = document.getElementById('provinceName').textContent;
-        let csv = 'Location,Full Address,Transactions,Quantity,Customers,Total Sales\n';
-        
-        filteredProvinceData.forEach(item => {
-            csv += `"${item.location}","${item.full_address}",${item.transaction_count},${item.total_qty},${item.customer_count},${item.total_amount}\n`;
-        });
-        
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${provinceName}_transactions.csv`;
-        a.click();
-    }
-
-    function showEmptyTooltip(event, province) {
-        const tooltip = document.getElementById('mapTooltip');
-        
-        tooltip.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">${province}</div>
-            <div style="color: #6c757d; font-size: 12px;">No transaction data</div>
-        `;
-        tooltip.style.display = 'block';
-        updateTooltipPosition(event);
-    }
-      
-    console.log(`Successfully colored ${coloredCount} provinces`);
-    console.log('=== MAP DEBUG END ===');
-    
-    function showTooltip(event, province, count, level) {
-        const tooltip = document.getElementById('mapTooltip');
-        const levelText = level.charAt(0).toUpperCase() + level.slice(1);
-        const levelColor = colors[level];
-        
-        tooltip.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">${province}</div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="display: inline-block; width: 12px; height: 12px; background-color: ${levelColor}; border-radius: 2px;"></span>
-                <span>${levelText}: ${count} transaction${count !== 1 ? 's' : ''}</span>
-            </div>
-        `;
-        tooltip.style.display = 'block';
-        updateTooltipPosition(event);
-    }
-    
-    function updateTooltipPosition(event) {
-        const tooltip = document.getElementById('mapTooltip');
-        tooltip.style.left = (event.pageX + 15) + 'px';
-        tooltip.style.top = (event.pageY + 15) + 'px';
-    }
-    
-    function hideTooltip() {
-        const tooltip = document.getElementById('mapTooltip');
-        tooltip.style.display = 'none';
-    }
+    window.showProvinceDetails = showProvinceDetails;
+    window.changePage = changePage;
+    window.exportProvinceData = exportProvinceData;
 });
 </script>
 
