@@ -641,52 +641,55 @@ class HomeController extends Controller
 
     private function calculateSalesTrend()
     {
-        $currentYear = Carbon::now()->year;
-        $previousYear = $currentYear - 1;
+        // $currentYear = Carbon::now()->year;
+        // $currentMonth = Carbon::now()->month;
         
-        $currentYearSales = TransactionDetail::whereYear('created_at', $currentYear)->sum('price');
-        $previousYearSales = TransactionDetail::whereYear('created_at', $previousYear)->sum('price');
+        // $currentYearTransactions = TransactionDetail::whereYear('created_at', $currentYear)->count();
         
-        if ($previousYearSales == 0) {
-            return [
-                'percentage' => $currentYearSales > 0 ? 100 : 0,
-                'trend' => $currentYearSales > 0 ? 'up' : 'neutral',
-                'icon' => $currentYearSales > 0 ? 'ti-trending-up' : 'ti-minus'
-            ];
-        }
+        // $targetTransactions = 12 * $currentMonth;
         
-        $percentageChange = (($currentYearSales - $previousYearSales) / $previousYearSales) * 100;
+        // if ($targetTransactions == 0) {
+        //     return [
+        //         'percentage' => 0,
+        //         'trend' => 'neutral',
+        //         'icon' => 'ti-minus'
+        //     ];
+        // }
         
-        return [
-            'percentage' => round(abs($percentageChange), 2),
-            'trend' => $percentageChange > 0 ? 'up' : ($percentageChange < 0 ? 'down' : 'neutral'),
-            'icon' => $percentageChange > 0 ? 'ti-trending-up' : ($percentageChange < 0 ? 'ti-trending-down' : 'ti-minus')
-        ];
+        // $percentageAchieved = ($currentYearTransactions / $targetTransactions) * 100;
+        
+        // return [
+        //     'percentage' => round($percentageAchieved, 2),
+        //     'trend' => $percentageAchieved >= 100 ? 'up' : ($percentageAchieved >= 80 ? 'neutral' : 'down'),
+        //     'icon' => $percentageAchieved >= 100 ? 'ti-trending-up' : ($percentageAchieved >= 80 ? 'ti-minus' : 'ti-trending-down')
+        // ];
     }
+
 
     private function calculateQtyTrend()
     {
-        $currentYear = Carbon::now()->year;
-        $previousYear = $currentYear - 1;
+        // $currentYear = Carbon::now()->year;
+        // $currentMonth = Carbon::now()->month;
         
-        $currentYearQty = TransactionDetail::whereYear('created_at', $currentYear)->sum('qty');
-        $previousYearQty = TransactionDetail::whereYear('created_at', $previousYear)->sum('qty');
+        // $currentYearQty = TransactionDetail::whereYear('created_at', $currentYear)->sum('qty');
         
-        if ($previousYearQty == 0) {
-            return [
-                'percentage' => $currentYearQty > 0 ? 100 : 0,
-                'trend' => $currentYearQty > 0 ? 'up' : 'neutral',
-                'icon' => $currentYearQty > 0 ? 'ti-trending-up' : 'ti-minus'
-            ];
-        }
+        // $targetQty = 12 * $currentMonth;
         
-        $percentageChange = (($currentYearQty - $previousYearQty) / $previousYearQty) * 100;
+        // if ($targetQty == 0) {
+        //     return [
+        //         'percentage' => 0,
+        //         'trend' => 'neutral',
+        //         'icon' => 'ti-minus'
+        //     ];
+        // }
         
-        return [
-            'percentage' => round(abs($percentageChange), 2),
-            'trend' => $percentageChange > 0 ? 'up' : ($percentageChange < 0 ? 'down' : 'neutral'),
-            'icon' => $percentageChange > 0 ? 'ti-trending-up' : ($percentageChange < 0 ? 'ti-trending-down' : 'ti-minus')
-        ];
+        // $percentageAchieved = ($currentYearQty / $targetQty) * 100;
+        
+        // return [
+        //     'percentage' => round($percentageAchieved, 2),
+        //     'trend' => $percentageAchieved >= 100 ? 'up' : ($percentageAchieved >= 80 ? 'neutral' : 'down'),
+        //     'icon' => $percentageAchieved >= 100 ? 'ti-trending-up' : ($percentageAchieved >= 80 ? 'ti-minus' : 'ti-trending-down')
+        // ];
     }
 
     public function about()

@@ -248,10 +248,10 @@
                                 ₱{{ number_format($total_sales, 2) }}
                             </div>
                             <div class="stats-label">Total Sales</div>
-                            <div class="trend-indicator {{ $sales_trend['trend'] == 'up' ? 'text-success' : ($sales_trend['trend'] == 'down' ? 'text-danger' : 'text-muted') }}">
+                            {{-- <div class="trend-indicator {{ $sales_trend['trend'] == 'up' ? 'text-success' : ($sales_trend['trend'] == 'down' ? 'text-danger' : 'text-muted') }}">
                                 {{ $sales_trend['percentage'] }}% 
                                 <i class="ti {{ $sales_trend['icon'] }}"></i>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
 
@@ -264,10 +264,10 @@
                                 {{number_format($transactions_details->sum('qty'),0)}} 
                             </div>
                             <div class="stats-label">Products Sold</div>
-                            <div class="trend-indicator {{ $qty_trend['trend'] == 'up' ? 'text-success' : ($qty_trend['trend'] == 'down' ? 'text-danger' : 'text-muted') }}">
+                            {{-- <div class="trend-indicator {{ $qty_trend['trend'] == 'up' ? 'text-success' : ($qty_trend['trend'] == 'down' ? 'text-danger' : 'text-muted') }}">
                                 {{ $qty_trend['percentage'] }}% 
                                 <i class="ti {{ $qty_trend['icon'] }}"></i>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
 
