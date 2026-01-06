@@ -124,21 +124,20 @@ class HomeController extends Controller
             $q->where('created_at', '>=', $threeDaysAgo);
         })
         ->whereHas('sales')
-        ->with(['sales' => function($query) {
-            $query->orderBy('created_at', 'desc')->limit(1);
-        }])
         ->get()
         ->map(function($dealer) {
-            $lastTransaction = $dealer->sales->first();
+            $lastTransaction = TransactionDetail::where('dealer_id', $dealer->user_id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
             $dealer->last_transaction_date = $lastTransaction ? $lastTransaction->created_at : null;
             $dealer->days_since_transaction = $lastTransaction 
-                ? Carbon::parse($lastTransaction->created_at)->diffInDays(Carbon::now()) 
+                ? \Carbon\Carbon::parse($lastTransaction->created_at)->diffInDays(\Carbon\Carbon::now()) 
                 : null;
             return $dealer;
         })
         ->sortByDesc('days_since_transaction');
 
-        // Get map data
         $mapData = $this->getPhilippineMapData();
 
         return view('home',

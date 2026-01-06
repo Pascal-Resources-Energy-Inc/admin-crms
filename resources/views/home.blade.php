@@ -1140,18 +1140,18 @@
                                 </div>
                                 
                                 <div class="col-6 text-end">
-                                  @if($dealer->last_transaction_date)
-                                    <div>
+                                  <div>
+                                    @if($dealer->last_transaction_date)
                                       <span class="text-dark fw-medium d-block" style="font-size: 12px;">
-                                        {{ date('M d, Y', strtotime($dealer->last_transaction_date)) }}
+                                        {{ \Carbon\Carbon::parse($dealer->last_transaction_date)->format('M d, Y') }}
                                       </span>
                                       <span class="badge bg-danger" style="font-size: 10px;">
-                                        {{ $dealer->days_since_transaction }} days ago
+                                        {{ $dealer->days_since_transaction }} {{ $dealer->days_since_transaction == 1 ? 'day' : 'days' }} ago
                                       </span>
-                                    </div>
-                                  @else
-                                    <span class="text-muted" style="font-size: 11px;">No data</span>
-                                  @endif
+                                    @else
+                                      <span class="text-muted" style="font-size: 12px;">No activity</span>
+                                    @endif
+                                  </div>
                                 </div>
                               </div>
                             </div>
