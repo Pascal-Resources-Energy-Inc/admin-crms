@@ -1028,11 +1028,11 @@
                   <div class="card w-100">
                     <div class="card-body">
                       <div class="d-flex mb-3 justify-content-center align-items-center position-relative">
-                        <div id="customers-donut-chart"></div>
+                        <div id="dealers-donut-chart"></div>
                         <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                          <small class="text-muted d-block" style="font-size: 11px;">Top 10 Customers</small>
+                          <small class="text-muted d-block" style="font-size: 11px;">Top 10 Dealers</small>
                           <h4 class="mb-0 fw-bold" style="font-size: 24px;">
-                              {{ $top_customers->isNotEmpty() ? number_format($top_customers->first()->total_points) : '0' }}
+                              {{ $dealers->isNotEmpty() ? number_format($dealers->first()->total_points) : '0' }}
                           </h4>
                         </div>
                       </div>
@@ -1041,20 +1041,20 @@
                         <table class="table table-bordered align-middle text-nowrap mb-0">
                           <thead class="bg-white">
                             <tr style="font-size: 11px; border-bottom: 1px solid #e5e7eb;">
-                              <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Customer</th>
+                              <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Dealer</th>
                               <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Total Points</th>
                               <th scope="col" style="padding: 6px 8px;">Last Transaction</th>
                             </tr>
                           </thead>
                           <tbody>
-                            @foreach($top_customers as $index => $customer)
+                            @foreach($dealers as $index => $dealer)
                               <tr style="font-size: 10px; border-bottom: 1px solid #e5e7eb;">
                                 <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">
-                                  <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'][$index % 10] }};"></span>
-                                  {{strtoupper(substr($customer->customer->name ?? 'Unknown', 0, 12))}}
+                                  <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#02437B', '#0E5A8A', '#1A7199', '#2688A8', '#329FB7', '#3EB6C6', '#4ACDD5', '#56E4E4', '#62FBF3', '#6EFFFF'][$index % 10] }};"></span>
+                                  {{strtoupper(substr($dealer->dealer->name ?? 'Unknown', 0, 12))}}
                                 </td>
-                                <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($customer->total_points,0)}}</td>
-                                <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($customer->latest_transaction))}}</td>
+                                <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($dealer->total_points,0)}}</td>
+                                <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($dealer->latest_transaction))}}</td>
                               </tr>
                             @endforeach
                           </tbody>
@@ -1184,16 +1184,16 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="col-lg-4 col-xl-4 d-flex align-items-stretch">
                   <div class="card w-100">
                     <div class="card-body">
                       <div class="d-flex mb-3 justify-content-center align-items-center position-relative">
-                        <div id="dealers-donut-chart"></div>
+                        <div id="customers-donut-chart"></div>
                         <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                          <small class="text-muted d-block" style="font-size: 11px;">Top 10 Dealers</small>
+                          <small class="text-muted d-block" style="font-size: 11px;">Top 10 Customers</small>
                           <h4 class="mb-0 fw-bold" style="font-size: 24px;">
-                              {{ $dealers->isNotEmpty() ? number_format($dealers->first()->total_points) : '0' }}
+                              {{ $top_customers->isNotEmpty() ? number_format($top_customers->first()->total_points) : '0' }}
                           </h4>
                         </div>
                       </div>
@@ -1202,20 +1202,20 @@
                         <table class="table table-bordered align-middle text-nowrap mb-0">
                           <thead class="bg-white">
                             <tr style="font-size: 11px; border-bottom: 1px solid #e5e7eb;">
-                              <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Dealer</th>
+                              <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Customer</th>
                               <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Total Points</th>
                               <th scope="col" style="padding: 6px 8px;">Last Transaction</th>
                             </tr>
                           </thead>
                           <tbody>
-                            @foreach($dealers as $index => $dealer)
+                            @foreach($top_customers as $index => $customer)
                               <tr style="font-size: 10px; border-bottom: 1px solid #e5e7eb;">
                                 <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">
-                                  <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#02437B', '#0E5A8A', '#1A7199', '#2688A8', '#329FB7', '#3EB6C6', '#4ACDD5', '#56E4E4', '#62FBF3', '#6EFFFF'][$index % 10] }};"></span>
-                                  {{strtoupper(substr($dealer->dealer->name ?? 'Unknown', 0, 12))}}
+                                  <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'][$index % 10] }};"></span>
+                                  {{strtoupper(substr($customer->customer->name ?? 'Unknown', 0, 12))}}
                                 </td>
-                                <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($dealer->total_points,0)}}</td>
-                                <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($dealer->latest_transaction))}}</td>
+                                <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($customer->total_points,0)}}</td>
+                                <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($customer->latest_transaction))}}</td>
                               </tr>
                             @endforeach
                           </tbody>
