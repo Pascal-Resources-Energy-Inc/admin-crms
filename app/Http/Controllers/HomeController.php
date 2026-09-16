@@ -52,12 +52,12 @@ class HomeController extends Controller
         $customers = Client::whereHas('transactions')->get();
         $transactions = Transaction::orderBy('id','desc')->get();
         $dealers = Dealer::get();
-        $transactions_details = TransactionDetail::orderBy('id','desc')->get();
+        $transactions_details = TransactionDetail::with(['customer', 'dealer', 'product'])->orderBy('id', 'desc')->get();
 
         if(auth()->user()->role == "Dealer")
         {
             $dealer = Dealer::with('sales')->where('user_id',auth()->user()->id)->first();
-            $transactions_details = TransactionDetail::where('dealer_id',auth()->user()->id)->orderBy('id','desc')->get();
+            $transactions_details = TransactionDetail::with(['customer', 'dealer', 'product'])->where('dealer_id',auth()->user()->id)->orderBy('id','desc')->get();
             $total_sales = TransactionDetail::where('dealer_id',auth()->user()->id)->sum('price');
 
             $totalEarnedPointsDealer = $dealer->sales->sum('points_dealer');
@@ -67,7 +67,7 @@ class HomeController extends Controller
         if(auth()->user()->role == "Client")
         {
             $customer = Client::where('user_id',auth()->user()->id)->first();
-            $transactions_details = TransactionDetail::where('client_id',$customer->id)->orderBy('id','desc')->get();
+            $transactions_details = TransactionDetail::with(['customer', 'dealer', 'product'])->where('client_id',$customer->id)->orderBy('id','desc')->get();
             $total_sales = TransactionDetail::where('client_id',$customer->id)->sum('price');
 
             $totalEarnedPointsCustomer = $customer->transactions->sum('points_client');
@@ -139,6 +139,16 @@ class HomeController extends Controller
         ->sortByDesc('days_since_transaction');
 
         $mapData = $this->getPhilippineMapData();
+        $reportYear = $request->filled('report_year') ? (int) $request->get('report_year') : null;
+        $reportMonth = $request->filled('report_month') ? (int) $request->get('report_month') : null;
+        $reportYear = $reportYear && $reportYear >= 1900 && $reportYear <= Carbon::now()->year + 1 ? $reportYear : null;
+        $reportMonth = $reportMonth && $reportMonth >= 1 && $reportMonth <= 12 ? $reportMonth : null;
+        if ($reportYear && !$reportMonth) {
+            $reportMonth = $reportYear === (int) Carbon::now()->year ? Carbon::now()->month : 12;
+        }
+        $refillReport = $this->getRefillReportData($reportYear, $reportMonth);
+        $reportYears = array_unique(array_merge($this->getAvailableYears(), [Carbon::now()->year]));
+        rsort($reportYears);
 
         return view('home',
             array(
@@ -164,8 +174,58 @@ class HomeController extends Controller
                 'customer_available_points' => $customerAvailablePoints ?? 0,
                 'dealers_inactive' => $dealers_inactive,
                 'map_data' => $mapData,
+                'refill_report' => $refillReport,
+                'report_years' => $reportYears,
+                'report_filter_year' => $reportYear,
+                'report_filter_month' => $reportMonth,
             )
         );
+    }
+
+    /**
+     * Return the rolling 12-month monitoring data used by the dashboard report.
+     */
+    private function getRefillReportData($year = null, $month = null)
+    {
+        $latest = TransactionDetail::max('created_at');
+        $lastMonth = $year && $month
+            ? Carbon::create($year, $month, 1)->startOfMonth()
+            : ($latest ? Carbon::parse($latest)->startOfMonth() : Carbon::now()->startOfMonth());
+        $firstMonth = $lastMonth->copy()->subMonths(11);
+
+        $totals = TransactionDetail::query()
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key")
+            ->selectRaw('SUM(qty) as refills')
+            ->selectRaw('COUNT(DISTINCT client_id) as beneficiaries')
+            ->whereBetween('created_at', [$firstMonth, $lastMonth->copy()->endOfMonth()])
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->get()
+            ->keyBy('month_key');
+
+        $months = collect(range(0, 11))->map(function ($offset) use ($firstMonth, $totals) {
+            $month = $firstMonth->copy()->addMonths($offset);
+            $total = $totals->get($month->format('Y-m'));
+            $refills = (int) ($total->refills ?? 0);
+            $beneficiaries = (int) ($total->beneficiaries ?? 0);
+
+            return [
+                'label' => $month->format('M-y'),
+                'refills' => $refills,
+                'beneficiaries' => $beneficiaries,
+                'average' => $beneficiaries ? round($refills / $beneficiaries, 1) : 0,
+            ];
+        })->values();
+
+        return [
+            'months' => $months,
+            'labels' => $months->pluck('label')->all(),
+            'refills' => $months->pluck('refills')->all(),
+            'averages' => $months->pluck('average')->all(),
+            'latest' => $months->last(),
+            'peak' => $months->sortByDesc('average')->first(),
+            'period_end' => $lastMonth->format('F Y'),
+        ];
     }
 
     private function getPhilippineMapData()
