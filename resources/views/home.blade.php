@@ -11,27 +11,50 @@
       margin-top: 90px !important;
   }
   .stats-card {
-      background: white;
-      border: none;
-      border-radius: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      padding: 20px;
+      background: linear-gradient(145deg, #ffffff 0%, #fffafa 100%);
+      border: 1px solid rgba(227, 52, 47, 0.12) !important;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(38, 24, 24, 0.08);
+      overflow: hidden;
+      padding: 22px;
       position: relative;
-      height: 130px;
+      /* min-height: 154px; */
+      transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .stats-card::before {
+      background: linear-gradient(180deg, #e3342f, #ff7a75);
+      content: '';
+      height: 100%;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 4px;
+  }
+
+  .stats-card:hover {
+      box-shadow: 0 14px 30px rgba(160, 30, 30, 0.14);
+      transform: translateY(-4px);
+  }
+
+  .stats-card__summary {
+    align-items: center;
+    display: flex;
+    gap: 12px;
   }
   
   .icon-circle {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: white;
-    /* border: 2px solid #17a2b8; */
-    border: 2px solid #e3342f;
+    background: #fff1f1;
+    border: 0;
     display: flex;
+    flex: 0 0 48px;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 4px rgba(23, 162, 184, 0.15);
+    margin: 0;
+    box-shadow: none;
   }
   
   .icon-circle i {
@@ -41,18 +64,21 @@
   }
   
   .stats-number {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #2c3e50;
-      margin-bottom: 4px;
+      display: block;
+      font-size: clamp(1.45rem, 2vw, 1.9rem);
+      font-weight: 800;
+      color: #202b3d;
+      margin-bottom: 0;
       line-height: 1.2;
   }
   
   .stats-label {
-      font-size: 0.875rem;
-      color: #6c757d;
-      font-weight: 500;
-      margin-bottom: 8px;
+      font-size: 0.72rem;
+      color: #718096;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin: 14px 0 0;
   }
   
   .trend-indicator {
@@ -222,87 +248,119 @@
     }
   }
 
+  @media (max-width: 575.98px) {
+    .stats-card {
+      min-height: 126px;
+      padding: 18px;
+    }
+
+    .icon-circle {
+      height: 42px;
+      width: 42px;
+    }
+  }
+
   .customer-link{
     font-size: 14px !important;
   }
+
+  /* Project GENESIS refill monitoring report */
+  .genesis-report { color: #27364b; font-family: 'Inter', sans-serif; }
+  .genesis-report__header { border-bottom: 1px solid #f1d6d6; margin-bottom: 18px; padding: 0 4px 14px; }
+  .genesis-report__header h2 { color: #e3342f; font-size: clamp(1.45rem, 2.2vw, 2rem); font-weight: 800; letter-spacing: .02em; margin: 0; }
+  .genesis-report__header h3 { color: #1f2937; font-size: clamp(1.15rem, 1.8vw, 1.55rem); font-weight: 800; margin: 2px 0; }
+  .genesis-report__header p { color: #64748b; font-style: italic; margin: 0; }
+  .genesis-report__asof { color: #64748b; font-size: .85rem; font-weight: 600; text-align: right; }
+  .genesis-report__asof strong { color: #e3342f; display: block; font-size: 1.2rem; letter-spacing: .08em; }
+  .genesis-report__filters { background: #fff8f8; border: 1px solid #f0d8d8; border-radius: 10px; margin-bottom: 16px; padding: 10px 12px; }
+  .genesis-report__filters .form-select { min-width: 130px; }
+  .genesis-report__period { color: #8e2525; font-size: .8rem; font-weight: 700; }
+  .genesis-card { background: #fff; border: 1px solid #f0d8d8; border-radius: 12px; box-shadow: 0 3px 14px rgba(120, 24, 24, .09); height: 100%; overflow: hidden; }
+  .genesis-card__title { background: linear-gradient(100deg, #b91c1c, #e3342f); color: #fff; font-size: 1.05rem; font-weight: 800; margin: 0; padding: 11px 16px; }
+  .genesis-card__body { padding: 14px 16px; }
+  .genesis-chart { min-height: 305px; }
+  .genesis-table-wrap { overflow-x: auto; }
+  .genesis-table { font-size: .8rem; margin: 0; min-width: 900px; }
+  .genesis-table th { background: #c82c2c; color: #fff; font-weight: 700; text-align: center; white-space: nowrap; }
+  .genesis-table th:first-child, .genesis-table td:first-child { min-width: 165px; text-align: left; }
+  .genesis-table td { border-color: #eddada; text-align: center; vertical-align: middle; }
+  .genesis-table tbody tr:nth-child(odd) td { background: #fff7f7; }
+  .genesis-table tbody td:first-child { color: #802020; font-weight: 750; }
+  .genesis-takeaways { background: linear-gradient(135deg, #fff8f8, #fff); }
+  .genesis-takeaway { align-items: flex-start; display: flex; gap: 12px; }
+  .genesis-takeaway + .genesis-takeaway { margin-top: 13px; }
+  .genesis-takeaway__number { align-items: center; background: linear-gradient(145deg, #b91c1c, #ef5350); border-radius: 50%; color: #fff; display: flex; flex: 0 0 40px; font-size: 1.25rem; font-weight: 800; height: 40px; justify-content: center; }
+  .genesis-takeaway h4 { color: #9e2020; font-size: .96rem; font-weight: 800; margin: 0 0 2px; }
+  .genesis-takeaway p { color: #4b5563; font-size: .84rem; line-height: 1.3; margin: 0; }
+  /* Temporarily hidden at the user's request; retain the markup and data flow for easy restoration. */
+  .refill-sold-quantity { display: none !important; }
+  @media (max-width: 767px) { .genesis-report__asof { margin-top: 10px; text-align: left; } .genesis-chart { min-height: 270px; } }
 </style>
 @section('content')
 
 <!--  Header End -->
   <!-- Welcome Section Start -->
   @include('alert')
-  <section class="welcome">
-    <div class="row">
-    <div class="col-lg-12 col-xl-12">
-        <div class="row custom-width-card">
-            <div class="col-sm-3 d-flex align-items-stretch">
-                <div class="card stats-card w-100 border-0">
-                    <div class="icon-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-currency-peso">
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                          <path d="M8 19v-14h3.5a4.5 4.5 0 1 1 0 9h-3.5" />
-                          <path d="M18 8h-12" />
-                          <path d="M18 11h-12" />
-                        </svg>
-                    </div>
-                    <div class="stats-number">
-                        ₱{{ number_format($total_sales, 2) }}
-                    </div>
-                    <div class="stats-label">Total Sales</div>
-                    {{-- <div class="trend-indicator {{ $sales_trend['trend'] == 'up' ? 'text-success' : ($sales_trend['trend'] == 'down' ? 'text-danger' : 'text-muted') }}">
-                        {{ $sales_trend['percentage'] }}% 
-                        <i class="ti {{ $sales_trend['icon'] }}"></i>
-                    </div> --}}
-                </div>
+  <section class="genesis-report mb-4">
+    {{-- <div class="genesis-report__header d-md-flex align-items-end justify-content-between">
+      <div><h2>Project GENESIS</h2><h3>Refill Monitoring Report</h3><p>Monthly refills, beneficiaries and average refills per beneficiary</p></div>
+      <div class="genesis-report__asof"><strong>GAZLITE</strong>Data as of {{ \Carbon\Carbon::now()->format('F d, Y') }}</div>
+    </div> --}}
+    <form class="genesis-report__filters d-flex flex-wrap align-items-end gap-2" method="GET" action="{{ url()->current() }}">
+      <div><label class="form-label small fw-semibold mb-1" for="report-year">Report year</label><select class="form-select form-select-sm" id="report-year" name="report_year"><option value="">Latest available</option>@foreach($report_years as $reportYear)<option value="{{ $reportYear }}" {{ $report_filter_year == $reportYear ? 'selected' : '' }}>{{ $reportYear }}</option>@endforeach</select></div>
+      <div><label class="form-label small fw-semibold mb-1" for="report-month">Ending month</label><select class="form-select form-select-sm" id="report-month" name="report_month" {{ !$report_filter_year ? 'disabled' : '' }}><option value="">Auto</option>@foreach(range(1, 12) as $reportMonth)<option value="{{ $reportMonth }}" {{ $report_filter_month == $reportMonth ? 'selected' : '' }}>{{ \Carbon\Carbon::create(2000, $reportMonth, 1)->format('F') }}</option>@endforeach</select></div>
+      <button class="btn btn-danger btn-sm" type="submit"><i class="ti ti-filter me-1"></i>Apply filter</button>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url()->current() }}">Clear</a>
+      <span class="genesis-report__period ms-md-auto">12-month period ending {{ $refill_report['period_end'] }}</span>
+    </form>
+    @php
+      $summaryCards = [
+        ['label' => 'Total Sales', 'value' => '₱' . number_format($total_sales, 2), 'icon' => 'peso'],
+        ['label' => 'Products Sold', 'value' => number_format($transactions_details->sum('qty')), 'icon' => 'shopping-cart'],
+        ['label' => 'Active Dealers', 'value' => number_format($dealers->count()), 'icon' => 'map-pin'],
+        ['label' => 'Active Customers', 'value' => number_format($customers->count()), 'icon' => 'users'],
+      ];
+    @endphp
+
+    <section class="row g-3 custom-width-card" aria-label="Dashboard summary">
+      @foreach($summaryCards as $card)
+        <div class="col-12 col-sm-6 col-xl-3 d-flex align-items-stretch">
+          <article class="card stats-card w-100 border-0">
+            <div class="stats-card__summary">
+              <span class="icon-circle" aria-hidden="true">
+                @if($card['icon'] === 'peso')
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 19V5h3.5a4.5 4.5 0 1 1 0 9H8" />
+                    <path d="M18 8H6M18 11H6" />
+                  </svg>
+                @else
+                  <i class="ti ti-{{ $card['icon'] }}"></i>
+                @endif
+              </span>
+
+              <span class="stats-number">{{ $card['value'] }}</span>
             </div>
 
-            <div class="col-sm-3 d-flex align-items-stretch">
-                <div class="card stats-card w-100 border-0">
-                    <div class="icon-circle">
-                        <i class="ti ti-shopping-cart"></i>
-                    </div>
-                    <div class="stats-number">
-                        {{number_format($transactions_details->sum('qty'),0)}} 
-                    </div>
-                    <div class="stats-label">Products Sold</div>
-                    {{-- <div class="trend-indicator {{ $qty_trend['trend'] == 'up' ? 'text-success' : ($qty_trend['trend'] == 'down' ? 'text-danger' : 'text-muted') }}">
-                        {{ $qty_trend['percentage'] }}% 
-                        <i class="ti {{ $qty_trend['icon'] }}"></i>
-                    </div> --}}
-                </div>
-            </div>
-
-            <div class="col-sm-3 d-flex align-items-stretch">
-                <div class="card stats-card w-100 border-0">
-                    <div class="icon-circle">
-                        <i class="ti ti-map-pin"></i>
-                    </div>
-                    <div class="stats-number">
-                        {{count($dealers)}} 
-                    </div>
-                    <div class="stats-label">Dealer</div>
-                </div>
-            </div>
-
-            <div class="col-sm-3 d-flex align-items-stretch">
-                <div class="card stats-card w-100 border-0">
-                    <div class="icon-circle">
-                        <i class="ti ti-users"></i>
-                    </div>
-                    <div class="stats-number">
-                        {{$customers->count()}} 
-                    </div>
-                    <div class="stats-label">Customers</div>
-                </div>
-            </div>
+            <p class="stats-label">{{ $card['label'] }}</p>
+          </article>
         </div>
+      @endforeach
+    </section>
+    <div class="row g-3 mb-3">
+      <div class="col-xl-7"><div class="genesis-card"><h3 class="genesis-card__title">Monthly Refills and Average Refills per Beneficiary</h3><div class="genesis-card__body"><div id="genesis-combined-chart" class="genesis-chart"></div></div></div></div>
+      <div class="col-xl-5"><div class="genesis-card"><h3 class="genesis-card__title">Average Refills per Beneficiary</h3><div class="genesis-card__body"><div id="genesis-average-chart" class="genesis-chart"></div></div></div></div>
     </div>
-  </div>
+    <div class="row g-3">
+      <div class="col-xl-8"><div class="genesis-card"><h3 class="genesis-card__title">Project GENESIS – Monthly Refill Monitoring Data</h3><div class="genesis-table-wrap"><table class="table table-bordered genesis-table"><thead><tr><th>Monitoring metric</th>@foreach($refill_report['months'] as $month)<th>{{ $month['label'] }}</th>@endforeach</tr></thead><tbody><tr><td>No. of Refills</td>@foreach($refill_report['months'] as $month)<td>{{ number_format($month['refills']) }}</td>@endforeach</tr><tr><td>No. of Beneficiaries</td>@foreach($refill_report['months'] as $month)<td>{{ number_format($month['beneficiaries']) }}</td>@endforeach</tr><tr><td>Average Refills<br>per Beneficiary</td>@foreach($refill_report['months'] as $month)<td>{{ number_format($month['average'], 1) }}</td>@endforeach</tr></tbody></table></div></div></div>
+      <div class="col-xl-4"><aside class="genesis-card genesis-takeaways"><h3 class="genesis-card__title">Key Takeaways</h3><div class="genesis-card__body"><div class="genesis-takeaway"><span class="genesis-takeaway__number">1</span><div><h4>Latest Activity</h4><p>{{ $refill_report['latest']['label'] }} recorded {{ number_format($refill_report['latest']['refills']) }} refills among {{ number_format($refill_report['latest']['beneficiaries']) }} beneficiaries.</p></div></div><div class="genesis-takeaway"><span class="genesis-takeaway__number">2</span><div><h4>Highest Average Usage</h4><p>{{ $refill_report['peak']['label'] }} had the highest usage at {{ number_format($refill_report['peak']['average'], 1) }} refills per beneficiary.</p></div></div><div class="genesis-takeaway"><span class="genesis-takeaway__number">3</span><div><h4>Live Monitoring</h4><p>The report automatically reflects the latest 12 months of recorded refill transactions.</p></div></div></div></aside></div>
+    </div>
+  </section>
+  <section class="welcome">
+    
   </section>
   <section>
     <div class="row">
-      
-      <div class="col-lg-8 col-xl-8 d-flex align-items-stretch">
+      {{-- <div class="col-lg-8 col-xl-8 d-flex align-items-stretch">
         <div class="card w-100">
             <div class="card-body">
               <div class="d-sm-flex justify-content-between align-items-start mb-3">
@@ -347,7 +405,7 @@
               <div id="chart-bar-stacked"></div>
             </div>
         </div>
-      </div>
+      </div> --}}
 
       <div class="col-lg-4 col-xl-4 d-flex align-items-stretch">
         <div class="card w-100">
@@ -888,204 +946,219 @@
           </div>
         </div>
       </div>
+      <div class="col-lg-4 col-xl-4 d-flex align-items-stretch">
+        <div class="card w-100">
+          <div class="card-body">
+            <div class="d-flex mb-3 justify-content-center align-items-center position-relative">
+              <div id="dealers-donut-chart"></div>
+              <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <small class="text-muted d-block" style="font-size: 11px;">Top 10 Dealers</small>
+                <h4 class="mb-0 fw-bold" style="font-size: 24px;">
+                    {{ $dealers->isNotEmpty() ? number_format($dealers->first()->total_points) : '0' }}
+                </h4>
+              </div>
+            </div>
+            
+            <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 6px;">
+              <table class="table table-bordered align-middle text-nowrap mb-0">
+                <thead class="bg-white">
+                  <tr style="font-size: 11px; border-bottom: 1px solid #e5e7eb;">
+                    <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Dealer</th>
+                    <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Total Points</th>
+                    <th scope="col" style="padding: 6px 8px;">Last Transaction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($dealers as $index => $dealer)
+                    <tr style="font-size: 10px; border-bottom: 1px solid #e5e7eb;">
+                      <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">
+                        <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#02437B', '#0E5A8A', '#1A7199', '#2688A8', '#329FB7', '#3EB6C6', '#4ACDD5', '#56E4E4', '#62FBF3', '#6EFFFF'][$index % 10] }};"></span>
+                        {{strtoupper(substr($dealer->dealer->name ?? 'Unknown', 0, 12))}}
+                      </td>
+                      <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($dealer->total_points,0)}}</td>
+                      <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($dealer->latest_transaction))}}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-xl-4 d-flex align-items-stretch">
+        <div class="card w-100">
+          <div class="card-body">
+            <div class="d-flex mb-3 justify-content-center align-items-center position-relative">
+              <div id="customers-donut-chart"></div>
+              <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <small class="text-muted d-block" style="font-size: 11px;">Top 10 Customers</small>
+                <h4 class="mb-0 fw-bold" style="font-size: 24px;">
+                    {{ $top_customers->isNotEmpty() ? number_format($top_customers->first()->total_points) : '0' }}
+                </h4>
+              </div>
+            </div>
+            
+            <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 6px;">
+              <table class="table table-bordered align-middle text-nowrap mb-0">
+                <thead class="bg-white">
+                  <tr style="font-size: 11px; border-bottom: 1px solid #e5e7eb;">
+                    <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Customer</th>
+                    <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Total Points</th>
+                    <th scope="col" style="padding: 6px 8px;">Last Transaction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($top_customers as $index => $customer)
+                    <tr style="font-size: 10px; border-bottom: 1px solid #e5e7eb;">
+                      <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">
+                        <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'][$index % 10] }};"></span>
+                        {{strtoupper(substr($customer->customer->name ?? 'Unknown', 0, 12))}}
+                      </td>
+                      <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($customer->total_points,0)}}</td>
+                      <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($customer->latest_transaction))}}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
   <section>
     <div class="row">
-      
-        <div class="col-lg-8 col-xl-8 d-flex align-items-stretch">
-          <div class="card w-100">
-            <div class="card-body">
-              <div class="d-flex mb-4 justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">Latest Transaction</h5>
-              </div>
+      <div class="col-lg-6 col-xl-6 d-flex align-items-stretch refill-sold-quantity">
+        <div class="card w-100">
+          <div class="card-body">
+            <div class="d-flex mb-4 justify-content-between align-items-center">
+              <h5 class="mb-0 fw-bold">Latest Transaction</h5>
+            </div>
 
-              <div class="row mb-3 px-3" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">
-                <div class="col-4">
-                  <small class="text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                    CUSTOMER
-                  </small>
-                </div>
-                <div class="col-4 text-center">
-                  <small class="text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                    DATE
-                  </small>
-                </div>
-                <div class="col-4 text-end">
-                  <small class="text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
-                    CUSTOMER POINTS
-                  </small>
-                </div>
+            <div class="row mb-3 px-3" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">
+              <div class="col-4">
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
+                  CUSTOMER
+                </small>
               </div>
+              <div class="col-4 text-center">
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
+                  DATE
+                </small>
+              </div>
+              <div class="col-4 text-end">
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
+                  CUSTOMER POINTS
+                </small>
+              </div>
+            </div>
 
-              <div class="transaction-list" style="max-height: 500px;">
-                @foreach($transactions_details as $index => $transaction)
-                  <div class="transaction-item {{ $index >= 5 ? 'd-none' : '' }}" data-customer-id="{{$transaction->customer->id ?? 0}}">
-                    <div class="row align-items-center p-3 mb-2 rounded-3 {{ $index % 2 == 0 ? '' : 'bg-light' }}" 
-                        style="border: 1px solid rgba(229, 231, 235, 0.6);">
-                      
-                      <div class="col-4">
-                        <div class="d-flex align-items-center">
-                          <div class="flex-shrink-0 me-3">
-                            <div class="avatar-circle position-relative" style="width: 45px; height: 45px;">
-                              <img src="{{ optional($transaction->customer)->avatar ? asset($transaction->customer->avatar) : asset('/design/assets/images/profile/user-1.png') }}" 
-                                  alt="{{ optional($transaction->customer)->name ?? 'Customer' }}"
-                                  class="rounded-circle w-100 h-100 object-fit-cover"
-                                  style="border: 2px solid #ff0000">
-                            </div>
+            <div class="transaction-list" style="max-height: 500px;">
+              @foreach($transactions_details as $index => $transaction)
+                <div class="transaction-item {{ $index >= 5 ? 'd-none' : '' }}" data-customer-id="{{$transaction->customer->id ?? 0}}">
+                  <div class="row align-items-center p-3 mb-2 rounded-3 {{ $index % 2 == 0 ? '' : 'bg-light' }}" 
+                      style="border: 1px solid rgba(229, 231, 235, 0.6);">
+                    
+                    <div class="col-4">
+                      <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                          <div class="avatar-circle position-relative" style="width: 45px; height: 45px;">
+                            <img src="{{ optional($transaction->customer)->avatar ? asset($transaction->customer->avatar) : asset('/design/assets/images/profile/user-1.png') }}" 
+                                alt="{{ optional($transaction->customer)->name ?? 'Customer' }}"
+                                class="rounded-circle w-100 h-100 object-fit-cover"
+                                style="border: 2px solid #ff0000">
                           </div>
-                          
-                          <div class="flex-grow-1">
-                            <h6 class="mb-0 fw-bold text-dark text-truncate">
-                                <a href="#" 
-                                    class="text-decoration-none text-dark customer-link text-truncate d-inline-block" 
-                                    style="max-width: 100%;"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#transactionModal" 
-                                    onclick="showTransactionDetails('{{date('M d, Y',strtotime($transaction->created_at))}}', '{{number_format($transaction->qty,2)}}', '{{number_format($transaction->qty*$transaction->price,2)}}', '{{strtoupper($transaction->dealer->name ?? '')}}', '{{strtoupper($transaction->customer->name ?? '')}}', '{{$transaction->points_dealer}}', '{{$transaction->points_client}}', '{{$transaction->item}}')">
-                                    {{ strtoupper($transaction->customer->name ?? 'Unknown') }}
-                                </a>
-                            </h6>
                         </div>
-                        </div>
+                        
+                        <div class="flex-grow-1">
+                          <h6 class="mb-0 fw-bold text-dark text-truncate">
+                              <a href="#" 
+                                  class="text-decoration-none text-dark customer-link text-truncate d-inline-block" 
+                                  style="max-width: 100%;"
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#transactionModal" 
+                                  onclick="showTransactionDetails('{{date('M d, Y',strtotime($transaction->created_at))}}', '{{number_format($transaction->qty,2)}}', '{{number_format($transaction->qty*$transaction->price,2)}}', '{{strtoupper($transaction->dealer->name ?? '')}}', '{{strtoupper($transaction->customer->name ?? '')}}', '{{$transaction->points_dealer}}', '{{$transaction->points_client}}', '{{$transaction->item}}')">
+                                  {{ strtoupper($transaction->customer->name ?? 'Unknown') }}
+                              </a>
+                          </h6>
                       </div>
-                      
-                      <div class="col-4 text-center">
-                        <span class="text-dark fw-medium">
-                          {{ date('d.m.Y', strtotime($transaction->created_at)) }}
-                        </span>
-                      </div>
-                      
-                      <div class="col-3 text-end">
-                        <span class="fw-bold text-dark">
-                          {{ $transaction->points_client }}
-                        </span>
                       </div>
                     </div>
+                    
+                    <div class="col-4 text-center">
+                      <span class="text-dark fw-medium">
+                        {{ date('d.m.Y', strtotime($transaction->created_at)) }}
+                      </span>
+                    </div>
+                    
+                    <div class="col-3 text-end">
+                      <span class="fw-bold text-dark">
+                        {{ $transaction->points_client }}
+                      </span>
+                    </div>
                   </div>
-                @endforeach
-              </div>
-
-              <div class="d-flex justify-content-between align-items-center mt-3">
-                <small class="text-muted" id="entriesInfo" style="font-size: 12px;">
-                  Showing <span id="currentStart">1</span> to <span id="currentEnd">5</span> of <span id="totalEntries">{{ $transactions_details->count() }}</span> entries
-                </small>
-                
-                <nav aria-label="Transaction pagination">
-                  <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item" id="prevPage">
-                      <a class="page-link" href="javascript:void(0)" onclick="changePage('prev')" style="font-size: 12px;">
-                        <i class="fas fa-chevron-left"></i> Previous
-                      </a>
-                    </li>
-                    <li class="page-item" id="nextPage">
-                      <a class="page-link" href="javascript:void(0)" onclick="changePage('next')" style="font-size: 12px;">
-                        Next <i class="fas fa-chevron-right"></i>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="transactionModalLabel">Transaction Details <span id="customerName" style="display:none"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <div class="table-responsive">
-                  <table class="table table-striped align-middle text-nowrap">
-                    <thead>
-                      <tr>
-                        <th scope="col">Date</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Dealer</th>
-                        <th scope="col">Customer</th>
-                        <th scope="col">Dealer Points</th>
-                        <th scope="col">Customer Points</th>
-                        <th scope="col">Item</th>
-                      </tr>
-                    </thead>
-                    <tbody id="customerTransactions">
-                      <!-- Customer transactions will be here -->
-                    </tbody>
-                  </table>
                 </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              </div>
+              @endforeach
             </div>
-          </div>
-        </div>
 
-        <div class="col-lg-4 col-xl-4 d-flex align-items-stretch">
-          <div class="card w-100">
-            <div class="card-body">
-              <div class="d-flex mb-3 justify-content-center align-items-center position-relative">
-                <div id="dealers-donut-chart"></div>
-                <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                  <small class="text-muted d-block" style="font-size: 11px;">Top 10 Dealers</small>
-                  <h4 class="mb-0 fw-bold" style="font-size: 24px;">
-                      {{ $dealers->isNotEmpty() ? number_format($dealers->first()->total_points) : '0' }}
-                  </h4>
-                </div>
-              </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <small class="text-muted" id="entriesInfo" style="font-size: 12px;">
+                Showing <span id="currentStart">1</span> to <span id="currentEnd">5</span> of <span id="totalEntries">{{ $transactions_details->count() }}</span> entries
+              </small>
               
-              <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 6px;">
-                <table class="table table-bordered align-middle text-nowrap mb-0">
-                  <thead class="bg-white">
-                    <tr style="font-size: 11px; border-bottom: 1px solid #e5e7eb;">
-                      <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Dealer</th>
-                      <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Total Points</th>
-                      <th scope="col" style="padding: 6px 8px;">Last Transaction</th>
+              <nav aria-label="Transaction pagination">
+                <ul class="pagination pagination-sm mb-0" id="transactionPagination">
+                  <li class="page-item" id="prevPage">
+                    <button class="page-link" type="button" onclick="transactionChangePage('prev')" style="font-size: 12px;">
+                      <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                  </li>
+                  <li class="page-item" id="nextPage">
+                    <button class="page-link" type="button" onclick="transactionChangePage('next')" style="font-size: 12px;">
+                      Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="transactionModalLabel">Transaction Details <span id="customerName" style="display:none"></span></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="table-responsive">
+                <table class="table table-striped align-middle text-nowrap">
+                  <thead>
+                    <tr>
+                      <th scope="col">Date</th>
+                      <th scope="col">Quantity</th>
+                      <th scope="col">Amount</th>
+                      <th scope="col">Dealer</th>
+                      <th scope="col">Customer</th>
+                      <th scope="col">Dealer Points</th>
+                      <th scope="col">Customer Points</th>
+                      <th scope="col">Item</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    @foreach($dealers as $index => $dealer)
-                      <tr style="font-size: 10px; border-bottom: 1px solid #e5e7eb;">
-                        <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">
-                          <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#02437B', '#0E5A8A', '#1A7199', '#2688A8', '#329FB7', '#3EB6C6', '#4ACDD5', '#56E4E4', '#62FBF3', '#6EFFFF'][$index % 10] }};"></span>
-                          {{strtoupper(substr($dealer->dealer->name ?? 'Unknown', 0, 12))}}
-                        </td>
-                        <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($dealer->total_points,0)}}</td>
-                        <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($dealer->latest_transaction))}}</td>
-                      </tr>
-                    @endforeach
+                  <tbody id="customerTransactions">
+                    <!-- Customer transactions will be here -->
                   </tbody>
                 </table>
               </div>
             </div>
-          </div>
-        </div>
-    </div>
-  </section>
-    {{-- <div class="col-lg-12 col-xl-6 d-flex align-items-stretch">
-          <div class="card w-100">
-            
-            <div class="card-body">
-              <h5>Stove Distributed(2025)</h5>
-              <div id="chart-bar-stacked-stove"></div>
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <h5 class="fs-4 mb-0 fw-bold">Stove Goals</h5>
-                <p class="text-primary fw-normal fs-3 mb-0">100</p>
-              </div>
-              <div class="progress bg-light-subtle" style="height: 10px">
-                <div class="progress-bar bg-primary  rounded" style="width: 35%;height: 10px;" role="progressbar" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">35%</div>
-              </div>
-              
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
-        </div> --}}
-  <section>
-    <div class="row">
-      <div class="col-lg-7 col-xl-8 d-flex align-items-stretch">
+        </div>
+      </div>
+      <div class="col-lg-6 col-xl-6 d-flex align-items-stretch">
         <div class="card w-100">
           <div class="card-body">
             <div class="d-flex mb-3 justify-content-between align-items-center">
@@ -1185,46 +1258,30 @@
           </div>
         </div>
       </div>
-
-      <div class="col-lg-4 col-xl-4 d-flex align-items-stretch">
-        <div class="card w-100">
-          <div class="card-body">
-            <div class="d-flex mb-3 justify-content-center align-items-center position-relative">
-              <div id="customers-donut-chart"></div>
-              <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-                <small class="text-muted d-block" style="font-size: 11px;">Top 10 Customers</small>
-                <h4 class="mb-0 fw-bold" style="font-size: 24px;">
-                    {{ $top_customers->isNotEmpty() ? number_format($top_customers->first()->total_points) : '0' }}
-                </h4>
-              </div>
-            </div>
+    </div>
+  </section>
+    {{-- <div class="col-lg-12 col-xl-6 d-flex align-items-stretch">
+          <div class="card w-100">
             
-            <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 6px;">
-              <table class="table table-bordered align-middle text-nowrap mb-0">
-                <thead class="bg-white">
-                  <tr style="font-size: 11px; border-bottom: 1px solid #e5e7eb;">
-                    <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Customer</th>
-                    <th scope="col" style="padding: 6px 8px; border-right: 1px solid #e5e7eb;">Total Points</th>
-                    <th scope="col" style="padding: 6px 8px;">Last Transaction</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @foreach($top_customers as $index => $customer)
-                    <tr style="font-size: 10px; border-bottom: 1px solid #e5e7eb;">
-                      <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">
-                        <span class="d-inline-block me-1" style="width: 8px; height: 8px; border-radius: 50%; background-color: {{ ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'][$index % 10] }};"></span>
-                        {{strtoupper(substr($customer->customer->name ?? 'Unknown', 0, 12))}}
-                      </td>
-                      <td style="padding: 4px 8px; border-right: 1px solid #e5e7eb;">{{number_format($customer->total_points,0)}}</td>
-                      <td style="padding: 4px 8px;">{{date('M j, Y',strtotime($customer->latest_transaction))}}</td>
-                    </tr>
-                  @endforeach
-                </tbody>
-              </table>
+            <div class="card-body">
+              <h5>Stove Distributed(2025)</h5>
+              <div id="chart-bar-stacked-stove"></div>
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fs-4 mb-0 fw-bold">Stove Goals</h5>
+                <p class="text-primary fw-normal fs-3 mb-0">100</p>
+              </div>
+              <div class="progress bg-light-subtle" style="height: 10px">
+                <div class="progress-bar bg-primary  rounded" style="width: 35%;height: 10px;" role="progressbar" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">35%</div>
+              </div>
+              
             </div>
           </div>
-        </div>
-      </div>
+        </div> --}}
+  <section>
+    <div class="row">
+      
+
+      
 
     </div>
   </section>        
@@ -1252,6 +1309,55 @@
 
 <script src="{{asset('design/assets/l ibs/jvectormap/jquery-jvectormap.min.js')}}"></script>
 <script src="{{asset('design/assets/libs/apexcharts/dist/apexcharts.min.js')}}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const reportYear = document.getElementById('report-year');
+  const reportMonth = document.getElementById('report-month');
+  reportYear.addEventListener('change', function () {
+    reportMonth.disabled = !this.value;
+    if (!this.value) reportMonth.value = '';
+  });
+
+  const labels = @json($refill_report['labels']);
+  const refills = @json($refill_report['refills']);
+  const averages = @json($refill_report['averages']);
+  const shared = {
+    chart: { toolbar: { show: false }, fontFamily: 'Inter, Arial, sans-serif' },
+    grid: { borderColor: '#f0dede' },
+    xaxis: { categories: labels, labels: { style: { fontSize: '11px' } } },
+    tooltip: { shared: true, intersect: false }
+  };
+
+  new ApexCharts(document.querySelector('#genesis-combined-chart'), {
+    ...shared,
+    series: [
+      { name: 'No. of Refills', type: 'column', data: refills },
+      { name: 'Average per Beneficiary', type: 'line', data: averages }
+    ],
+    chart: { ...shared.chart, type: 'line', height: 305 },
+    colors: ['#e3342f', '#631313'],
+    stroke: { width: [0, 3], curve: 'straight' },
+    markers: { size: [0, 5] },
+    dataLabels: { enabled: true, enabledOnSeries: [0, 1], style: { fontSize: '10px' } },
+    plotOptions: { bar: { columnWidth: '55%', dataLabels: { position: 'top' } } },
+    yaxis: [
+      { title: { text: 'Number of Refills' }, labels: { formatter: value => Math.round(value) } },
+      { opposite: true, title: { text: 'Average per Beneficiary' }, labels: { formatter: value => value.toFixed(1) } }
+    ],
+    legend: { position: 'top' }
+  }).render();
+
+  new ApexCharts(document.querySelector('#genesis-average-chart'), {
+    ...shared,
+    series: [{ name: 'Average Refills per Beneficiary', data: averages }],
+    chart: { ...shared.chart, type: 'line', height: 305 },
+    colors: ['#e3342f'], stroke: { width: 3, curve: 'straight' }, markers: { size: 5 },
+    dataLabels: { enabled: true, style: { fontSize: '10px' } },
+    yaxis: { min: 0, title: { text: 'Average per Beneficiary' }, labels: { formatter: value => value.toFixed(1) } },
+    legend: { show: false }
+  }).render();
+});
+</script>
 <script src="{{asset('design/assets/js/extra-libs/jvectormap/jquery-jvectormap-us-aea-en.js')}}"></script>
 <script src="{{asset('design/assets/js/dashboards/dashboard.js')}}"></script>
 <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
@@ -1981,6 +2087,7 @@ $(document).ready(function() {
 
 <script>
 let chartInstance = null;
+let chartRequest = null;
 const initialCategories = @json($categories);
 const initialQty = @json($qty);
 const initialViewType = @json($view_type);
@@ -1992,8 +2099,10 @@ $(function () {
   // Handle year selection change
   $('#yearSelect').on('change', function() {
     const selectedYear = $(this).val();
-    const selectedMonth = $('#monthSelect').val();
-    loadChartData(selectedYear, selectedMonth);
+    // A month available in the prior year may not exist in this year.
+    // Resetting it first guarantees a valid yearly view and refreshes its options.
+    $('#monthSelect').val('');
+    loadChartData(selectedYear, null);
   });
   
   // Handle month selection change
@@ -2005,6 +2114,12 @@ $(function () {
 });
 
 function loadChartData(year, month = null) {
+  if (!year) return;
+
+  if (chartRequest) {
+    chartRequest.abort();
+  }
+
   // Disable dropdowns to prevent multiple requests
   $('#yearSelect, #monthSelect').prop('disabled', true);
   
@@ -2012,44 +2127,31 @@ function loadChartData(year, month = null) {
   $('#chartLoading').show();
   $('#chart-bar-stacked').hide();
   
-  // Add a small delay to ensure UI updates are visible
-  setTimeout(() => {
-    $.ajax({
-      url: '{{ route("home.chart-data") }}',
-      method: 'GET',
-      data: { 
-        year: year, 
-        month: month || null 
-      },
-      cache: false,
-      success: function(response) {
-        console.log('Data loaded for year:', year, 'month:', month, response);
-        
-        // Update available months dropdown
-        updateMonthsDropdown(response.available_months, month);
-        
-        // Update view mode indicator
-        updateViewModeIndicator(response.view_type);
-        
-        // Hide loading and show chart
-        $('#chartLoading').hide();
-        $('#chart-bar-stacked').show();
-        
-        // Re-enable dropdowns
-        $('#yearSelect, #monthSelect').prop('disabled', false);
-        
-        // Render chart with new data
-        renderChart(response.categories, response.qty, response.year, response.month, response.view_type);
-      },
-      error: function(xhr, status, error) {
-        $('#chartLoading').hide();
-        $('#chart-bar-stacked').show();
-        $('#yearSelect, #monthSelect').prop('disabled', false);
-        console.error('Error loading chart data:', error);
-        alert('Error loading data. Please try again.');
-      }
-    });
-  }, 100);
+  chartRequest = $.ajax({
+    url: '{{ route("home.chart-data") }}',
+    method: 'GET',
+    data: { year: year, month: month || null },
+    cache: false
+  }).done(function(response) {
+    if (!response || !Array.isArray(response.categories) || !Array.isArray(response.qty)) {
+      $('#chart-bar-stacked').html('<div class="text-center text-muted py-5">No chart data is available for this selection.</div>');
+      return;
+    }
+
+    updateMonthsDropdown(Array.isArray(response.available_months) ? response.available_months : [], response.month);
+    updateViewModeIndicator(response.view_type || 'yearly');
+    renderChart(response.categories, response.qty, response.year, response.month, response.view_type || 'yearly');
+  }).fail(function(xhr, status, error) {
+    if (status !== 'abort') {
+      console.error('Unable to load refill data:', error || xhr.responseText);
+      $('#chart-bar-stacked').html('<div class="text-center text-muted py-5">Unable to load refill data. Please try again.</div>');
+    }
+  }).always(function() {
+    chartRequest = null;
+    $('#chartLoading').hide();
+    $('#chart-bar-stacked').show();
+    $('#yearSelect, #monthSelect').prop('disabled', false);
+  });
 }
 
 function updateMonthsDropdown(availableMonths, selectedMonth) {
@@ -2075,6 +2177,9 @@ function updateViewModeIndicator(viewType) {
 }
 
 function renderChart(categories, qty, year, month = null, viewType = 'yearly') {
+  categories = Array.isArray(categories) ? categories : [];
+  qty = Array.isArray(qty) ? qty : [];
+
   // Destroy existing chart if it exists
   if (chartInstance) {
     chartInstance.destroy();
@@ -2082,7 +2187,9 @@ function renderChart(categories, qty, year, month = null, viewType = 'yearly') {
   }
   
   // Clear the chart container
-  document.querySelector("#chart-bar-stacked").innerHTML = '';
+  const chartElement = document.querySelector("#chart-bar-stacked");
+  if (!chartElement) return;
+  chartElement.innerHTML = '';
   
   // Determine chart title and axis labels based on view type
   const chartTitle = viewType === 'monthly' 
@@ -2313,7 +2420,7 @@ function renderChart(categories, qty, year, month = null, viewType = 'yearly') {
 
   setTimeout(() => {
     chartInstance = new ApexCharts(
-      document.querySelector("#chart-bar-stacked"),
+      chartElement,
       options_area
     );
     chartInstance.render();
@@ -2330,119 +2437,54 @@ function getMonthName(monthNumber) {
 }
 </script>
 <script>
-let currentPage = 1;
-let entriesPerPage = 5;
-let totalEntries = {{ $transactions_details->count() }};
-let totalPages = Math.ceil(totalEntries / entriesPerPage);
+/* Kept separate from province and inactive-dealer pagination to prevent handler collisions. */
+(() => {
+  const items = Array.from(document.querySelectorAll('.transaction-item'));
+  const previous = document.getElementById('prevPage');
+  const next = document.getElementById('nextPage');
+  const pager = document.getElementById('transactionPagination');
+  const pageSize = 5;
+  const pages = Math.max(1, Math.ceil(items.length / pageSize));
+  let page = 1;
 
-function updateTableEntries() {
-    entriesPerPage = parseInt(document.getElementById('entriesPerPage').value);
-    totalPages = Math.ceil(totalEntries / entriesPerPage);
-    currentPage = 1;
-    showPage(currentPage);
-    updatePagination();
-    updateEntriesInfo();
-}
+  const render = () => {
+    const start = (page - 1) * pageSize;
+    items.forEach((item, index) => item.classList.toggle('d-none', index < start || index >= start + pageSize));
+    document.getElementById('currentStart').textContent = items.length ? start + 1 : 0;
+    document.getElementById('currentEnd').textContent = Math.min(start + pageSize, items.length);
+    document.getElementById('totalEntries').textContent = items.length;
+    pager.querySelectorAll('.transaction-page-number').forEach(item => item.remove());
 
-function showPage(page) {
-    const items = document.querySelectorAll('.transaction-item');
-    const startIndex = (page - 1) * entriesPerPage;
-    const endIndex = startIndex + entriesPerPage;
-    
-    items.forEach((item, index) => {
-        if (index >= startIndex && index < endIndex) {
-            item.classList.remove('d-none');
-        } else {
-            item.classList.add('d-none');
-        }
-    });
-}
+    const addPage = number => {
+      const li = document.createElement('li');
+      li.className = `page-item transaction-page-number${number === page ? ' active' : ''}`;
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'page-link'; button.textContent = number;
+      button.addEventListener('click', () => { page = number; render(); });
+      li.appendChild(button);
+      pager.insertBefore(li, next);
+    };
+    const addEllipsis = () => {
+      const li = document.createElement('li');
+      li.className = 'page-item disabled transaction-page-number';
+      li.innerHTML = '<span class="page-link">…</span>';
+      pager.insertBefore(li, next);
+    };
+    const first = Math.max(1, page - 2), last = Math.min(pages, page + 2);
+    if (first > 1) { addPage(1); if (first > 2) addEllipsis(); }
+    for (let number = first; number <= last; number++) addPage(number);
+    if (last < pages) { if (last < pages - 1) addEllipsis(); addPage(pages); }
+    previous.classList.toggle('disabled', page === 1);
+    next.classList.toggle('disabled', page === pages || items.length === 0);
+  };
 
-function changePage(direction) {
-    if (direction === 'next' && currentPage < totalPages) {
-        currentPage++;
-    } else if (direction === 'prev' && currentPage > 1) {
-        currentPage--;
-    }
-    showPage(currentPage);
-    updatePagination();
-    updateEntriesInfo();
-    return false;
-}
-
-function goToPage(page) {
-    currentPage = page;
-    showPage(currentPage);
-    updatePagination();
-    updateEntriesInfo();
-    return false;
-}
-
-function updatePagination() {
-    const pageNumbers = document.querySelector('.pagination');
-    const pageItems = pageNumbers.querySelectorAll('.page-item:not(#prevPage):not(#nextPage)');
-    pageItems.forEach(item => item.remove());
-    
-    const prevPage = document.getElementById('prevPage');
-    const nextPage = document.getElementById('nextPage');
-    
-    let startPage, endPage;
-    
-    if (totalPages <= 3) {
-        startPage = 1;
-        endPage = totalPages;
-    } else {
-        if (currentPage <= 2) {
-            startPage = 1;
-            endPage = 3;
-        } else if (currentPage >= totalPages - 1) {
-            startPage = totalPages - 2;
-            endPage = totalPages;
-        } else {
-            startPage = currentPage - 1;
-            endPage = currentPage + 1;
-        }
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        const li = document.createElement('li');
-        li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-        li.innerHTML = `<a class="page-link" href="javascript:void(0)" onclick="goToPage(${i}); return false;" style="font-size: 12px;">${i}</a>`;
-        nextPage.parentNode.insertBefore(li, nextPage);
-    }
-    
-    if (startPage > 1) {
-        const dotsLi = document.createElement('li');
-        dotsLi.className = 'page-item disabled';
-        dotsLi.innerHTML = '<span class="page-link" style="font-size: 12px;">...</span>';
-        prevPage.nextSibling.after(dotsLi);
-    }
-    
-    if (endPage < totalPages) {
-        const dotsLi = document.createElement('li');
-        dotsLi.className = 'page-item disabled';
-        dotsLi.innerHTML = '<span class="page-link" style="font-size: 12px;">...</span>';
-        nextPage.parentNode.insertBefore(dotsLi, nextPage);
-    }
-    
-    document.getElementById('prevPage').classList.toggle('disabled', currentPage === 1);
-    document.getElementById('nextPage').classList.toggle('disabled', currentPage === totalPages);
-}
-
-function updateEntriesInfo() {
-    const startEntry = (currentPage - 1) * entriesPerPage + 1;
-    const endEntry = Math.min(currentPage * entriesPerPage, totalEntries);
-    
-    document.getElementById('currentStart').textContent = startEntry;
-    document.getElementById('currentEnd').textContent = endEntry;
-    document.getElementById('totalEntries').textContent = totalEntries;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    showPage(1);
-    updatePagination();
-    updateEntriesInfo();
-});
+  window.transactionChangePage = direction => {
+    if (direction === 'next' && page < pages) page++;
+    if (direction === 'prev' && page > 1) page--;
+    render();
+  };
+  document.addEventListener('DOMContentLoaded', render);
+})();
 </script>
 {{-- <script src="{{asset('design/assets/js/apex-chart/apex.bar.init.js')}}"></script> --}}
 <script src="{{asset('design/assets/js/dashboards/dashboard.js')}}"></script>
