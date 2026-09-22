@@ -49,7 +49,8 @@ class HomeController extends Controller
         )
         ->get();
 
-        $customers = Client::whereHas('transactions')->get();
+        // $customers = Client::whereHas('transactions')->get();
+        $customers = Client::where('status', 'Active')->get();
         $transactions = Transaction::orderBy('id','desc')->get();
         $dealers = Dealer::get();
         $transactions_details = TransactionDetail::with(['customer', 'dealer', 'product'])->orderBy('id', 'desc')->get();
@@ -102,7 +103,7 @@ class HomeController extends Controller
         ->groupBy('dealer_id')
         ->orderByDesc('total_points')
         ->get();
-
+        
         $top_customers = TransactionDetail::select(
             'client_id',
             DB::raw('SUM(points_client) as total_points'),
@@ -202,7 +203,7 @@ class HomeController extends Controller
             ->orderBy('month_key')
             ->get()
             ->keyBy('month_key');
-
+        
         $months = collect(range(0, 11))->map(function ($offset) use ($firstMonth, $totals) {
             $month = $firstMonth->copy()->addMonths($offset);
             $total = $totals->get($month->format('Y-m'));
