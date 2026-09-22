@@ -149,6 +149,7 @@ table.dataTable {
 
 </style>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap4.min.css">
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -171,9 +172,7 @@ table.dataTable {
                             <i class="ti ti-brand-producthunt fs-8 fw-lighter"></i>
                           </div>
                           <h5 class="text-white fw-bold fs-14 text-nowrap">
-                          {{ $transactions->sum(function($transaction) {
-                                return $transaction->price * $transaction->qty;
-                            }) }}
+                          {{ number_format($transactionStats['total_sales'], 2) }}
                           </h5>
                           <p class="opacity-50 mb-0 ">TOTAL SALES</p>
                         </div>
@@ -186,7 +185,7 @@ table.dataTable {
                             <i class="ti ti-brand-producthunt fs-8 fw-lighter"></i>
                           </div>
                           <h5 class="text-white fw-bold fs-14 text-nowrap">
-                            {{$transactions->count()}}
+                            {{ $transactionStats['total_transactions'] }}
                           </h5>
                           <p class="opacity-50 mb-0 ">TRANSACTIONS</p>
                         </div>
@@ -199,7 +198,7 @@ table.dataTable {
                             <i class="ti ti-brand-producthunt fs-8 fw-lighter"></i>
                           </div>
                           <h5 class="text-white fw-bold fs-14 text-nowrap">
-                            {{$transactions->sum('qty')}}
+                            {{ number_format($transactionStats['total_quantity'], 2) }}
                           </h5>
                           <p class="opacity-50 mb-0 ">QTY SOLD</p>
                         </div>
@@ -212,7 +211,7 @@ table.dataTable {
                             <i class="ti ti-brand-producthunt fs-8 fw-lighter"></i>
                           </div>
                           <h5 class="text-white fw-bold fs-14 text-nowrap">
-                            {{$transactions->sum('points_dealer') + $transactions->sum('points_client')}}
+                            {{ number_format($transactionStats['total_points'], 2) }}
                           </h5>
                           <p class="opacity-50 mb-0 ">TOTAL POINTS</p>
                         </div>
@@ -229,7 +228,6 @@ table.dataTable {
                           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTransactionModalAdmin">
                               <i class="bi bi-plus-lg"></i> Search Name
                           </button>
-                          <div id="exportExcelContainer"></div>
                           <button type="button" class="btn btn-danger btn-sm" id="deleteSelectedBtn" title="Delete Selected" style="display: none; height: 38px;">
                               <i class="bi bi-trash"></i> Delete All
                           </button>
@@ -241,6 +239,9 @@ table.dataTable {
                               <i class="bi bi-plus-lg"></i> Search Name
                           </button>
                       @endif
+                      <button type="button" class="btn btn-success btn-sm export-btn-custom" id="exportTransactionsBtn">
+                          <i class="bi bi-file-earmark-excel"></i> Export Excel
+                      </button>
                   </div>
 
                   <div class="table-responsive">
@@ -248,14 +249,14 @@ table.dataTable {
                           <thead>
                               <tr>
                                   @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
-                                      <th scope="col" style="width: 50px; text-align: center;">
+                                      <th scope="col" class="no-export" style="width: 50px; text-align: center;">
                                           <div class="d-flex align-items-center justify-content-center">
                                               <input type="checkbox" id="selectAll" title="Select All" style="cursor: pointer;">
                                           </div>
                                       </th>
                                   @endif
                                   <th scope="col">ID</th>
-                                  <th scope="col">Date</th>
+                                  <th scope="col" class="date-column">Date</th>
                                   <th scope="col">Quantity</th>
                                   <th scope="col">Amount</th>
                                   <th scope="col">Dealer</th>
@@ -264,40 +265,11 @@ table.dataTable {
                                   <th scope="col">Customer Points</th>
                                   <th scope="col">Item</th>
                                   @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
-                                      <th scope="col" style="width: 80px; text-align: center;">Actions</th>
+                                      <th scope="col" class="no-export" style="width: 80px; text-align: center;">Actions</th>
                                   @endif
                               </tr>
                           </thead>
-                          <tbody id="transactionBody">
-                              @foreach($transactions as $transaction)
-                                  <tr id="transaction-row-{{$transaction->id}}">
-                                      @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
-                                          <td style="text-align: center;">
-                                              <input type="checkbox" class="checkbox-item" data-id="{{$transaction->id}}" style="cursor: pointer;">
-                                          </td>
-                                      @endif
-                                      <td>{{$transaction->id}}</td>
-                                      <td>{{ date('M d, Y', strtotime($transaction->date)) }}</td>
-                                      <td>{{ number_format($transaction->qty, 2) }}</td>
-                                      <td>{{ number_format($transaction->qty * $transaction->price, 2) }}</td>
-                                      <td>{{ $transaction->dealer->name ?? '' }}</td>
-                                      <td>{{ $transaction->customer->name ?? '' }}</td>
-                                      <td><span class='text-success'>{{ $transaction->points_dealer }}</span></td>
-                                      <td><span class='text-success'>{{ $transaction->points_client }}</span></td>
-                                      <td>{{ $transaction->item }}</td>
-                                      @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
-                                          <td style="text-align: center;">
-                                              <button type="button" class="btn btn-danger btn-sm delete-single" 
-                                                      data-id="{{ $transaction->id }}" 
-                                                      title="Delete"
-                                                      style="cursor: pointer;">
-                                                  <i class="bi bi-trash"></i>
-                                              </button>
-                                          </td>
-                                      @endif
-                                  </tr>
-                              @endforeach
-                          </tbody>
+                          <tbody id="transactionBody"></tbody>
                       </table>
                   </div>
                 </div>
@@ -363,33 +335,56 @@ $(document).ready(function() {
         }
     });
 
-    const table = $('#example').DataTable({
+    const $transactionTable = $('#example');
+    const dateColumnIndex = $transactionTable.find('thead .date-column').index();
+    const tableColumns = [
+        @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
+        { data: 'select', orderable: false, searchable: false, className: 'text-center no-export' },
+        @endif
+        { data: 'id' },
+        { data: 'date', render: function (data, type, row) { return type === 'display' || type === 'filter' ? row.date_display : data; } },
+        { data: 'quantity' }, { data: 'amount' },
+        { data: 'dealer', orderable: false }, { data: 'customer', orderable: false },
+        { data: 'dealer_points' }, { data: 'customer_points' }, { data: 'item' },
+        @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
+        { data: 'actions', orderable: false, searchable: false, className: 'text-center no-export' }
+        @endif
+    ];
+
+    const table = $transactionTable.DataTable({
         dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
              '<"row"<"col-sm-12"tr>>' +
              '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        processing: true,
+        serverSide: true,
+        ajax: { url: '{{ route('transactions.data') }}', type: 'GET' },
+        columns: tableColumns,
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        pagingType: 'simple_numbers',
+        scrollX: true,
+        autoWidth: false,
         buttons: [
             {
                 extend: 'excelHtml5',
                 text: 'Export Excel',
                 className: 'btn btn-sm btn-success export-btn-custom',
-                title: 'Transactions'
-            }
-        ],
-        columnDefs: [
-            { 
-                orderable: false, 
-                targets: [0, -1] // Disable sorting on first column (checkbox) and last column (actions)
-            },
-            {
-                className: 'text-center', // Center align the checkbox column
-                targets: [0]
+                title: 'Transactions',
+                exportOptions: {
+                    columns: ':not(.no-export)',
+                    orthogonal: 'export',
+                    format: { body: function (data) { return $('<div>').html(data).text().trim(); } }
+                }
             }
         ],
         destroy: true,
-        order: [[1, 'desc']] // Default sort by ID column (index 1) in descending order
+        order: [[dateColumnIndex, 'desc']]
     });
 
-    table.buttons().container().appendTo('#exportExcelContainer');
+    $('#exportTransactionsBtn').on('click', function () {
+        const search = table.search();
+        window.location.href = '{{ route('transactions.export') }}?search=' + encodeURIComponent(search);
+    });
 
     $(document).on('change', '.checkbox-item', function() {
         updateUI();
