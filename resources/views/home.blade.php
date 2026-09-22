@@ -316,9 +316,9 @@
     @php
       $summaryCards = [
         ['label' => 'Total Sales', 'value' => '₱' . number_format($total_sales, 2), 'icon' => 'peso'],
-        ['label' => 'Products Sold', 'value' => number_format($transactions_details->sum('qty')), 'icon' => 'shopping-cart'],
-        ['label' => 'Active Dealers', 'value' => number_format($dealers->count()), 'icon' => 'map-pin'],
-        ['label' => 'Active Customers', 'value' => number_format($customers->count()), 'icon' => 'users'],
+        ['label' => 'Total Products Sold', 'value' => number_format($transactions_details->sum('qty')), 'icon' => 'shopping-cart'],
+        ['label' => 'Total Active Dealers', 'value' => number_format($dealers->count()), 'icon' => 'map-pin'],
+        ['label' => 'Total Active Customers', 'value' => number_format($customers->count()), 'icon' => 'users'],
       ];
     @endphp
 
