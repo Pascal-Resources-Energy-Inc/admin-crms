@@ -261,6 +261,7 @@ table.dataTable {
                                   <th scope="col">Amount</th>
                                   <th scope="col">Dealer</th>
                                   <th scope="col">Customer</th>
+                                  <th scope="col">Customer Address</th>
                                   <th scope="col">Dealer Points</th>
                                   <th scope="col">Customer Points</th>
                                   <th scope="col">Item</th>
@@ -345,6 +346,7 @@ $(document).ready(function() {
         { data: 'date', render: function (data, type, row) { return type === 'display' || type === 'filter' ? row.date_display : data; } },
         { data: 'quantity' }, { data: 'amount' },
         { data: 'dealer', orderable: false }, { data: 'customer', orderable: false },
+        { data: 'customer_address', orderable: false },
         { data: 'dealer_points' }, { data: 'customer_points' }, { data: 'item' },
         @if(auth()->user()->role == "Admin" && auth()->user()->can_delete === "on")
         { data: 'actions', orderable: false, searchable: false, className: 'text-center no-export' }

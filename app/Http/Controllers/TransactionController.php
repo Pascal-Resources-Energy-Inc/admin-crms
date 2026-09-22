@@ -68,7 +68,9 @@ class TransactionController extends Controller
                     'date_display' => date('M d, Y', strtotime($transaction->date)),
                     'quantity' => number_format($transaction->qty, 2),
                     'amount' => number_format($transaction->qty * $transaction->price, 2),
-                    'dealer' => optional($transaction->dealer)->name, 'customer' => optional($transaction->customer)->name,
+                    'dealer' => optional($transaction->dealer)->name,
+                    'customer' => optional($transaction->customer)->name,
+                    'customer_address' => optional($transaction->customer)->address,
                     'dealer_points' => '<span class="text-success">' . e($transaction->points_dealer) . '</span>',
                     'customer_points' => '<span class="text-success">' . e($transaction->points_client) . '</span>',
                     'item' => e($transaction->item),
@@ -90,15 +92,29 @@ class TransactionController extends Controller
 
         return response()->stream(function () use ($query) {
             echo '<?xml version="1.0" encoding="UTF-8"?>';
-            echo '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Transactions"><Table>';
-            echo '<Row><Cell><Data ss:Type="String">ID</Data></Cell><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Quantity</Data></Cell><Cell><Data ss:Type="String">Amount</Data></Cell><Cell><Data ss:Type="String">Dealer</Data></Cell><Cell><Data ss:Type="String">Customer</Data></Cell><Cell><Data ss:Type="String">Dealer Points</Data></Cell><Cell><Data ss:Type="String">Customer Points</Data></Cell><Cell><Data ss:Type="String">Item</Data></Cell></Row>';
+            echo '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+            echo '<Styles><Style ss:ID="Date"><NumberFormat ss:Format="yyyy-mm-dd"/></Style><Style ss:ID="Number"><NumberFormat ss:Format="0.00"/></Style></Styles>';
+            echo '<Worksheet ss:Name="Transactions"><Table>';
+            echo '<Row><Cell><Data ss:Type="String">ID</Data></Cell><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Quantity</Data></Cell><Cell><Data ss:Type="String">Amount</Data></Cell><Cell><Data ss:Type="String">Dealer</Data></Cell><Cell><Data ss:Type="String">Customer</Data></Cell><Cell><Data ss:Type="String">Customer Address</Data></Cell><Cell><Data ss:Type="String">Dealer Points</Data></Cell><Cell><Data ss:Type="String">Customer Points</Data></Cell><Cell><Data ss:Type="String">Item</Data></Cell></Row>';
 
             $query->with(['dealer', 'customer'])->orderBy('date', 'desc')->orderBy('id', 'desc')->chunk(500, function ($transactions) {
                 foreach ($transactions as $transaction) {
-                    $values = [$transaction->id, $transaction->date, number_format($transaction->qty, 2, '.', ''), number_format($transaction->qty * $transaction->price, 2, '.', ''), optional($transaction->dealer)->name, optional($transaction->customer)->name, $transaction->points_dealer, $transaction->points_client, $transaction->item];
+                    $values = [
+                        ['value' => $transaction->id, 'type' => 'Number'],
+                        ['value' => date('Y-m-d\\T00:00:00.000', strtotime($transaction->date)), 'type' => 'DateTime', 'style' => 'Date'],
+                        ['value' => $transaction->qty, 'type' => 'Number', 'style' => 'Number'],
+                        ['value' => $transaction->qty * $transaction->price, 'type' => 'Number', 'style' => 'Number'],
+                        ['value' => optional($transaction->dealer)->name, 'type' => 'String'],
+                        ['value' => optional($transaction->customer)->name, 'type' => 'String'],
+                        ['value' => optional($transaction->customer)->address, 'type' => 'String'],
+                        ['value' => $transaction->points_dealer, 'type' => 'Number', 'style' => 'Number'],
+                        ['value' => $transaction->points_client, 'type' => 'Number', 'style' => 'Number'],
+                        ['value' => $transaction->item, 'type' => 'String'],
+                    ];
                     echo '<Row>';
-                    foreach ($values as $value) {
-                        echo '<Cell><Data ss:Type="String">' . htmlspecialchars((string) $value, ENT_XML1 | ENT_COMPAT, 'UTF-8') . '</Data></Cell>';
+                    foreach ($values as $field) {
+                        $style = isset($field['style']) ? ' ss:StyleID="' . $field['style'] . '"' : '';
+                        echo '<Cell' . $style . '><Data ss:Type="' . $field['type'] . '">' . htmlspecialchars((string) $field['value'], ENT_XML1 | ENT_COMPAT, 'UTF-8') . '</Data></Cell>';
                     }
                     echo '</Row>';
                 }
@@ -136,7 +152,8 @@ class TransactionController extends Controller
                     $dealerQuery->where('name', 'like', '%' . $search . '%');
                 })
                 ->orWhereHas('customer', function ($customerQuery) use ($search) {
-                    $customerQuery->where('name', 'like', '%' . $search . '%');
+                    $customerQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('address', 'like', '%' . $search . '%');
                 });
         });
     }
