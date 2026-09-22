@@ -187,17 +187,17 @@ class HomeController extends Controller
      */
     private function getRefillReportData($year = null, $month = null)
     {
-        $latest = TransactionDetail::max('created_at');
+        $latest = TransactionDetail::max('date');
         $lastMonth = $year && $month
             ? Carbon::create($year, $month, 1)->startOfMonth()
             : ($latest ? Carbon::parse($latest)->startOfMonth() : Carbon::now()->startOfMonth());
         $firstMonth = $lastMonth->copy()->subMonths(11);
 
         $totals = TransactionDetail::query()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key")
+            ->selectRaw("DATE_FORMAT(date, '%Y-%m') as month_key")
             ->selectRaw('SUM(qty) as refills')
             ->selectRaw('COUNT(DISTINCT client_id) as beneficiaries')
-            ->whereBetween('created_at', [$firstMonth, $lastMonth->copy()->endOfMonth()])
+            ->whereBetween('date', [$firstMonth, $lastMonth->copy()->endOfMonth()])
             ->groupBy('month_key')
             ->orderBy('month_key')
             ->get()

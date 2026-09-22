@@ -27,6 +27,8 @@ Route::group(['middleware' => 'auth'], function () {
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/transactions','TransactionController@index')->name('transactions');
+Route::get('/transactions/data', 'TransactionController@data')->name('transactions.data');
+Route::get('/transactions/export', 'TransactionController@export')->name('transactions.export');
 Route::delete('/transactions/{id}', 'TransactionController@destroy')->name('transactions.destroy');
 Route::post('/transactions/bulk-delete', 'TransactionController@bulkDelete')->name('transactions.bulkDelete');
 
